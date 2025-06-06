@@ -77,6 +77,10 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
+    allowedHosts: [
+      'ba0d-152-249-225-112.ngrok-free.app', // Domínio atual do Ngrok
+      '.ngrok-free.app' // Permite todos os subdomínios do Ngrok
+    ]
   },
   css: {
     preprocessorOptions: {

@@ -20,7 +20,7 @@ export default {
       message: "Google Login",
       params: {
         client_id:
-          "1020172479770-dehu2n1ni9ajlncqdoul6om2mfr0897v.apps.googleusercontent.com",
+          "7131457454-nlv7rol3b7tdlk1qd6ri9agndmqv0h6h.apps.googleusercontent.com",
       },
       renderParams: {
         width: 250,
