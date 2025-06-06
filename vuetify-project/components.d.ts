@@ -8,9 +8,14 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppToolbar: typeof import('./src/components/AppToolbar.vue')['default']
+    DiscordBot: typeof import('./src/pages/DiscordBot.vue')['default']
     GoogleLoginComponent: typeof import('./src/components/GoogleLoginComponent.vue')['default']
+    NotFound: typeof import('./src/pages/NotFound.vue')['default']
     ProjecT: typeof import('./src/components/ProjecT.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Toolbar: typeof import('./src/components/Toolbar.vue')['default']
+    TopMusics: typeof import('./src/pages/TopMusics.vue')['default']
   }
 }
