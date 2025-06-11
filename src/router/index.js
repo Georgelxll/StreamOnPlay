@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/components/ProjecT.vue'
 import BotDiscord from '@/pages/DiscordBot.vue'
-import TopMusics from '@/pages/TopMusics.vue'
+import Musics from '@/pages/Musics.vue'
 
 const routes = [
   {
@@ -15,9 +15,9 @@ const routes = [
     component: BotDiscord
   },
   {
-    path: '/top-musics',
-    name: 'TopMusics',
-    component: TopMusics
+    path: '/musics',
+    name: 'Musics',
+    component: Musics
   }
 ]
 

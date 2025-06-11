@@ -24,7 +24,7 @@ const dialogStore = useDialogStore();
           Bot Discord
         </v-tooltip>
       </v-btn>
-      <v-btn to="/top-musics">
+      <v-btn to="/musics">
         <v-icon>mdi-music</v-icon>
         <v-tooltip
           activator="parent"
@@ -32,7 +32,7 @@ const dialogStore = useDialogStore();
           theme="dark"
           color="#2a9db4"
         >
-          Top Musics
+          Musics
         </v-tooltip>
       </v-btn>
       <v-btn @click="dialogStore.openRegister()">Register</v-btn>
