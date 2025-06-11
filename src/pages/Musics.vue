@@ -31,7 +31,12 @@
                 <v-col cols="2" class="d-flex justify-end">
                   <v-tooltip location="bottom" theme="dark" color="#2a9db4">
                     <template v-slot:activator="{ props }">
-                      <v-btn icon variant="text" v-bind="props" @click="">
+                      <v-btn
+                        icon
+                        variant="text"
+                        v-bind="props"
+                        @click="addMusicModal"
+                      >
                         <v-icon>mdi-plus</v-icon>
                       </v-btn>
                     </template>
@@ -116,26 +121,84 @@
             :style="{
               height: '500px',
               width: '300px',
+              borderRadius: '20px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
               backgroundColor: currentColor,
               transition: 'all 0.5s ease',
             }"
-            class="d-flex flex-column align-center justify-center"
+            class="d-flex flex-column align-center justify-center pa-6"
           >
-            <v-avatar size="150" class="mb-4">
+            <v-avatar
+              size="150"
+              class="mb-4"
+              style="
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+                border: 5px solid white;
+              "
+            >
               <v-img :src="currentCover" />
             </v-avatar>
-            <v-card-title class="text-center">{{ currentTitle }}</v-card-title>
-            <v-card-subtitle class="text-center">{{
-              currentArtist
-            }}</v-card-subtitle>
-            <v-btn
-              class="mt-4"
-              :icon="paused ? 'mdi-play' : 'mdi-pause'"
-              @click="togglePause"
+            <v-card-title class="text-center text-h6 font-weight-medium mb-2">
+              {{ currentTitle }}
+            </v-card-title>
+            <v-card-subtitle
+              class="text-center text-body-2 text-grey-darken-1 mb-4"
+            >
+              {{ currentArtist }}
+            </v-card-subtitle>
+            <v-row align="center" justify="space-around" class="w-100 mb-2">
+              <v-icon>mdi-music-note</v-icon>
+              <v-icon color="red">mdi-heart</v-icon>
+              <v-icon>mdi-volume-high</v-icon>
+            </v-row>
+
+            <div
+              class="d-flex align-center justify-space-between w-100 px-4 text-caption mb-1"
+            >
+              <span>0:00</span>
+              <span>1:20</span>
+            </div>
+
+            <v-slider
+              color="white"
+              track-color="grey-lighten-1"
+              thumb-label="always"
+              class="w-100"
+              v-model="progress"
+              min="0"
+              max="100"
             />
-            <v-btn class="mt-4" icon="mdi-close" @click="closeMusic" />
+
+            <v-btn
+              icon
+              size="large"
+              class="mt-6"
+              :color="paused ? 'white' : 'grey-darken-2'"
+              @click="togglePause"
+            >
+              <v-icon size="36">{{ paused ? "mdi-play" : "mdi-pause" }}</v-icon>
+            </v-btn>
           </v-card>
         </div>
+
+        <v-dialog v-model="showAddMusicDialog" width="600" persistent>
+          <v-card style="height: 600px">
+            <v-card-title class="text-h6">Add New Music</v-card-title>
+            <v-card-text>
+              <!-- Coloque aqui os campos do formulário -->
+              <v-text-field label="Title" />
+              <v-text-field label="Artist" />
+              <v-text-field label="Cover URL" />
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="primary" @click="addMusicURL">Add</v-btn>
+              <v-btn color="grey" @click="showAddMusicDialog = false"
+                >Cancel</v-btn
+              >
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-container>
     </v-main>
   </v-app>
@@ -143,6 +206,14 @@
 
 <script setup>
 import { ref } from "vue";
+
+const showAddMusicDialog = ref(false);
+
+function addMusicModal() {
+  showAddMusicDialog.value = true;
+}
+
+function addMusicURL() {}
 
 // estados
 const loaded = ref(false);
