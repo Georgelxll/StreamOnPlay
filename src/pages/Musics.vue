@@ -122,15 +122,15 @@
           style="height: 100vh"
         >
           <!-- Botão de voltar -->
-          <div style="position: absolute; top: 90px; left: 20px; background-color: black; border-radius: 100px;">
+          <div style="position: absolute; top: 90px; left: 20px;">
             <v-btn
               icon="mdi-chevron-left"
               @click="closeMusic"
-              color="white"
+              color="black"
               variant="text"
             ></v-btn>
           </div>
-          
+
           <v-card
             :style="{
               height: '500px',

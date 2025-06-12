@@ -294,7 +294,7 @@ export default {
 ::v-deep(.input-white .v-field.v-field--focused .v-field-label),
 ::v-deep(.input-white .v-field.v-field--dirty .v-field-label) {
   color: white !important;
-  font-size: 17px; /* Um pouco maior ao flutuar */
+  font-size: 14px; /* Um pouco maior ao flutuar */
   font-weight: 600; /* Mais espesso */
 }
 </style>
