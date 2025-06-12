@@ -181,22 +181,76 @@
           </v-card>
         </div>
 
-        <v-dialog v-model="showAddMusicDialog" width="600" persistent>
-          <v-card style="height: 600px">
-            <v-card-title class="text-h6">Add New Music</v-card-title>
+        <v-dialog
+          v-model="showAddMusicDialog"
+          max-width="420px"
+          persistent
+          hide-overlay
+        >
+          <v-card class="pa-6" style="background-color: #000" dark>
+            <v-btn
+              icon
+              class="close-btn"
+              @click="closeAddMusic"
+              style="position: absolute; top: 18px; right: 22px; color: white"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+
+            <v-card-title class="justify-center">
+              <h2 class="text-white text-h5 font-weight-bold text-center">
+                Adicionar Música
+              </h2>
+            </v-card-title>
+
             <v-card-text>
-              <!-- Coloque aqui os campos do formulário -->
-              <v-text-field label="Title" />
-              <v-text-field label="Artist" />
-              <v-text-field label="Cover URL" />
+              <v-form>
+                <v-text-field
+                  v-model="musicTitle"
+                  label="Título da música"
+                  dense
+                  hide-details
+                  color="white"
+                  variant="outlined"
+                  bg-color="#12833e"
+                  class="input-white mb-4"
+                  required
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="musicArtist"
+                  label="Artista"
+                  dense
+                  hide-details
+                  color="white"
+                  variant="outlined"
+                  bg-color="#12833e"
+                  class="input-white mb-4"
+                  required
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="musicUrl"
+                  label="URL da música"
+                  dense
+                  hide-details
+                  color="white"
+                  variant="outlined"
+                  bg-color="#12833e"
+                  class="input-white mb-6"
+                  required
+                ></v-text-field>
+
+                <v-btn
+                  @click="saveMusic"
+                  block
+                  class="text-white green-btn text-uppercase font-weight-bold"
+                  size="large"
+                >
+                  Salvar Música
+                </v-btn>
+              </v-form>
             </v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn color="primary" @click="addMusicURL">Add</v-btn>
-              <v-btn color="grey" @click="showAddMusicDialog = false"
-                >Cancel</v-btn
-              >
-            </v-card-actions>
           </v-card>
         </v-dialog>
       </v-container>
@@ -256,6 +310,10 @@ function closeMusic() {
   stopMusic();
 }
 
+function closeAddMusic() {
+  showAddMusicDialog.value = false;
+}
+
 // Função para clarear a cor (hex) dinamicamente
 function lightenColor(hex, amount = 0.5) {
   let col = hex.replace("#", "");
@@ -274,3 +332,67 @@ function lightenColor(hex, amount = 0.5) {
   return `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
 }
 </script>
+<style scoped>
+.v-dialog__content {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.close-btn {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  color: White;
+  cursor: pointer;
+}
+
+.input-white .v-input__control {
+  background-color: #12833e !important;
+  border-radius: 12px;
+}
+
+::v-deep(.input-white .v-field-label) {
+  color: white !important;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+::v-deep(.input-white .v-field.v-field--focused .v-field-label),
+::v-deep(.input-white .v-field.v-field--dirty .v-field-label) {
+  color: white !important;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.green-btn {
+  background-color: #12833e;
+  color: black;
+  font-weight: 600;
+  border-radius: 50px;
+}
+
+.green-btn:hover {
+  background-color: #10702e;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.v-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
