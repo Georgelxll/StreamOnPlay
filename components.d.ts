@@ -9,12 +9,9 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppToolbar: typeof import('./src/components/AppToolbar.vue')['default']
-    Auth: typeof import('./src/components/Auth.vue')['default']
     GoogleLoginComponent: typeof import('./src/components/GoogleLoginComponent.vue')['default']
-    LoginForm: typeof import('./src/components/LoginForm.vue')['default']
     ProjecT: typeof import('./src/components/ProjecT.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SingUpForm: typeof import('./src/components/SingUpForm.vue')['default']
   }
 }

@@ -13,7 +13,11 @@
         <div v-if="!playing" class="py-8">
           <h1 class="text-center mt-16">Musics</h1>
 
-          <v-card class="mx-auto mb-10 mt-10" color="surface-light" max-width="400">
+          <v-card
+            class="mx-auto mb-10 mt-10"
+            color="surface-light"
+            max-width="400"
+          >
             <v-card-text>
               <v-row align="center" no-gutters>
                 <v-col cols="10">
@@ -117,6 +121,16 @@
           class="d-flex flex-column align-center justify-center"
           style="height: 100vh"
         >
+          <!-- Botão de voltar -->
+          <div style="position: absolute; top: 90px; left: 20px; background-color: black; border-radius: 100px;">
+            <v-btn
+              icon="mdi-chevron-left"
+              @click="closeMusic"
+              color="white"
+              variant="text"
+            ></v-btn>
+          </div>
+          
           <v-card
             :style="{
               height: '500px',
