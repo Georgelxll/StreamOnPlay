@@ -11,9 +11,9 @@
       >
         <!-- titulo e busca -->
         <div v-if="!playing" class="py-8">
-          <h1 class="text-center mb-6">Musics</h1>
+          <h1 class="text-center mt-16">Musics</h1>
 
-          <v-card class="mx-auto mb-12" color="surface-light" max-width="400">
+          <v-card class="mx-auto mb-10 mt-10" color="surface-light" max-width="400">
             <v-card-text>
               <v-row align="center" no-gutters>
                 <v-col cols="10">
