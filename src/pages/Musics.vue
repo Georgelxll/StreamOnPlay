@@ -281,34 +281,34 @@
           app
           class="px-4 py-2"
           height="80"
-          style="
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #121212;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-          "
+          :style="{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: playing ? lightenColor(currentColor, 0.5) : '',
+            zIndex: 1000,
+            transition: 'transform 0.3s ease, background-color 1s ease',
+          }"
         >
           <v-row align="center" class="w-100" no-gutters>
             <v-col cols="auto">
               <v-btn
                 icon="mdi-close"
                 @click="stopMusic"
-                color="white"
+                color="black"
                 variant="text"
               ></v-btn>
-              <v-avatar size="56">
+              <v-avatar size="56" class="ml-4">
                 <v-img :src="currentCover" />
               </v-avatar>
             </v-col>
 
             <v-col>
-              <div class="text-white text-body-2 font-weight-medium">
+              <div class="text-black text-body-2 font-weight-medium ml-4">
                 {{ currentTitle }}
               </div>
-              <div class="text-grey-lighten-1 text-caption">
+              <div class="text-grey text-caption ml-4">
                 {{ currentArtist }}
               </div>
             </v-col>
@@ -317,7 +317,7 @@
               <v-btn icon @click="togglePause" color="white">
                 <v-icon>{{ paused ? "mdi-play" : "mdi-pause" }}</v-icon>
               </v-btn>
-              <v-btn icon color="white">
+              <v-btn icon color="white" class="ml-4">
                 <v-icon>mdi-skip-next</v-icon>
               </v-btn>
             </v-col>
