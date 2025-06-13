@@ -1,11 +1,13 @@
 <template>
   <v-app>
     <app-toolbar
-      @open-register="dialogStore.registerDialog = true"
-      @open-login="dialogStore.loginDialog = true"
+      @open-register="openSignupModal"
+      @open-login="openLoginModal"
     />
 
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <component :is="Component" @open-signup-modal="openSignupModal" />
+    </router-view>
 
     <v-dialog
       v-model="dialogStore.loginDialog"
@@ -210,6 +212,16 @@ const login = () => {
 const register = () => {
   console.log("Registering with password:", registerPassword.value);
   // lógica de registro
+};
+
+const openSignupModal = () => {
+  tab.value = "signup";
+  dialogStore.loginDialog = true;
+};
+
+const openLoginModal = () => {
+  tab.value = "login";
+  dialogStore.loginDialog = true;
 };
 </script>
 

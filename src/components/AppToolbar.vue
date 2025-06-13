@@ -40,15 +40,17 @@
         <v-btn
           variant="plain"
           class="nav-link text-uppercase"
-          @click="dialogStore.openRegister()"
-          >SingUp</v-btn
+          @click="emit('open-register')"
         >
+          SignUp
+        </v-btn>
         <v-btn
           variant="plain"
           class="nav-link text-uppercase"
-          @click="dialogStore.openLogin()"
-          >Login</v-btn
+          @click="emit('open-login')"
         >
+          Login
+        </v-btn>
       </div>
     </div>
   </v-app-bar>
@@ -56,9 +58,8 @@
 
 <script setup>
 import { ref } from "vue";
-import { useDialogStore } from "@/stores/dialogStore";
 
-const dialogStore = useDialogStore();
+const emit = defineEmits(["open-login", "open-register"]);
 
 const navItems = [
   {
