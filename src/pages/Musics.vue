@@ -205,6 +205,15 @@ async function saveSong() {
     return;
   }
 
+  if (!token.value) {
+    showSnackbar(
+      "Você precisa estar autenticado para acrescentar uma música.",
+      "red"
+    );
+
+    return;
+  }
+
   try {
     const response = await fetch("http://localhost:3001/api/songs", {
       method: "POST",
@@ -218,11 +227,13 @@ async function saveSong() {
     if (response.ok) {
       const newStored = await response.json();
 
+      // acrescenta na lista junto às já presentes
       songs.value.unshift({
         id: Date.now(),
         title: newStored.title,
         artist: newStored.artist,
         cover: newStored.cover,
+        url,
       });
 
       newSong.value = { url: "" };
@@ -230,7 +241,8 @@ async function saveSong() {
 
       showSnackbar("Música adicionada!", "green");
     } else {
-      showSnackbar("Erro ao acrescentar música.", "red");
+      const error = await response.json();
+      showSnackbar(error.error ?? "Erro ao acrescentar música.", "red");
 
       console.error(await response.text());
     }

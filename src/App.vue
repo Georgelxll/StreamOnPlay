@@ -9,27 +9,22 @@
       <component :is="Component" @open-signup-modal="openSignupModal" />
     </router-view>
 
-    <v-dialog
-      v-model="dialogStore.loginDialog"
-      max-width="400"
-      theme="light"
-      color="#2a9db4"
-    >
+    <v-dialog v-model="dialogStore.loginDialog" max-width="400" color="#2a9db4">
       <v-card class="pa-6" style="background-color: #000" dark>
         <!-- Abas -->
         <v-tabs v-model="tab" background-color="transparent" grow>
-            <v-tab
-              value="signup"
-              class="text-white text-uppercase font-weight-bold"
-            >
-              Sign Up
-            </v-tab>
-            <v-tab
-              value="login"
-              class="text-white text-uppercase font-weight-bold"
-            >
-              Log In
-            </v-tab>
+          <v-tab
+            value="signup"
+            class="text-white text-uppercase font-weight-bold"
+          >
+            Sign Up
+          </v-tab>
+          <v-tab
+            value="login"
+            class="text-white text-uppercase font-weight-bold"
+          >
+            Log In
+          </v-tab>
         </v-tabs>
 
         <!-- Conteúdo -->
@@ -179,12 +174,16 @@ const userDetails = ref(null);
 
 const openSignupModal = () => {
   tab.value = "signup";
-  dialogStore.openRegister();
+  dialogStore.loginDialog = true;
 };
 
 const openLoginModal = () => {
   tab.value = "login";
-  dialogStore.openLogin();
+  dialogStore.loginDialog = true;
+};
+
+const handleClose = () => {
+  dialogStore.loginDialog = false;
 };
 
 const register = async () => {
