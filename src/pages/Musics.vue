@@ -235,7 +235,7 @@
                   hide-details
                   color="white"
                   variant="outlined"
-                  bg-color="#12833e"
+                  bg-color="#1C1C1C"
                   class="input-white mb-4"
                   required
                 ></v-text-field>
@@ -247,7 +247,7 @@
                   hide-details
                   color="white"
                   variant="outlined"
-                  bg-color="#12833e"
+                  bg-color="#1C1C1C"
                   class="input-white mb-4"
                   required
                 ></v-text-field>
@@ -259,7 +259,7 @@
                   hide-details
                   color="white"
                   variant="outlined"
-                  bg-color="#12833e"
+                  bg-color="#1C1C1C"
                   class="input-white mb-6"
                   required
                 ></v-text-field>

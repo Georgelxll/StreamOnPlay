@@ -47,7 +47,7 @@
                     hide-details
                     color="white"
                     variant="outlined"
-                    bg-color="#12833e"
+                    bg-color="#1C1C1C"
                     class="input-white"
                     required
                   ></v-text-field>
@@ -59,7 +59,7 @@
                     hide-details
                     color="white"
                     variant="outlined"
-                    bg-color="#12833e"
+                    bg-color="#1C1C1C"
                     class="input-white"
                     required
                   ></v-text-field>
@@ -73,7 +73,7 @@
                 hide-details
                 color="white"
                 variant="outlined"
-                bg-color="#12833e"
+                bg-color="#1C1C1C"
                 required
               ></v-text-field>
 
@@ -85,7 +85,7 @@
                 hide-details
                 color="white"
                 variant="outlined"
-                bg-color="#12833e"
+                bg-color="#1C1C1C"
                 required
               ></v-text-field>
 
@@ -107,7 +107,7 @@
                 hide-details
                 color="white"
                 variant="outlined"
-                bg-color="#12833e"
+                bg-color="#1C1C1C"
                 class="input-white"
                 required
               ></v-text-field>
@@ -120,7 +120,7 @@
                 hide-details
                 color="white"
                 variant="outlined"
-                bg-color="#12833e"
+                bg-color="#1C1C1C"
                 required
               ></v-text-field>
 
