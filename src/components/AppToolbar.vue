@@ -50,6 +50,7 @@
         >
       </div>
 
+<<<<<<< HEAD
       <!-- Ícone hamburguer (visível apenas quando menu fechado) -->
       <div v-if="!mobileMenuOpen" class="d-flex d-md-none">
         <div class="hamburger" @click="toggleMobileMenu">
@@ -57,6 +58,41 @@
           <span></span>
           <span></span>
         </div>
+=======
+        <!-- Se o usuário NÃO estiver autenticado -->
+        <v-btn
+          v-if="!userName"
+          variant="plain"
+          class="nav-link text-uppercase"
+          @click="emit('open-register')"
+        >
+          SignUp
+        </v-btn>
+        <v-btn
+          v-if="!userName"
+          variant="plain"
+          class="nav-link text-uppercase"
+          @click="emit('open-login')"
+        >
+          Login
+        </v-btn>
+
+        <!-- Se o usuário ESTÁ autenticado -->
+        <v-menu v-if="userName">
+          <template #activator="{ props }">
+            <v-btn variant="plain" v-bind="props">
+              <span style="color: #fff">
+                {{ userName }}
+              </span>
+              <v-icon icon="mdi-menu-down" color="#fff" />
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item @click="handleLogout"> Sair </v-list-item>
+          </v-list>
+        </v-menu>
+>>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
       </div>
     </div>
 
@@ -114,8 +150,12 @@
 </template>
 
 <script setup>
+<<<<<<< HEAD
 import { ref } from "vue";
 import { useDialogStore } from "@/stores/dialogStore";
+=======
+import { ref, onMounted } from "vue";
+>>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
 
 const dialogStore = useDialogStore();
 
@@ -129,6 +169,7 @@ const navItems = [
   { icon: "mdi-music", to: "/musics", label: "Músicas", tooltip: "Musics" },
 ];
 
+<<<<<<< HEAD
 const mobileMenuOpen = ref(false);
 
 function toggleMobileMenu() {
@@ -137,6 +178,24 @@ function toggleMobileMenu() {
 
 function closeMobileMenu() {
   mobileMenuOpen.value = false;
+=======
+// Pegue o nome do usuário do localStorage
+const userName = ref(null);
+
+onMounted(() => {
+  userName.value = localStorage.getItem("userName") || null;
+});
+
+// Implementação do logout opcional
+function handleLogout() {
+  localStorage.removeItem("userName");
+
+  // opcional: também o token
+  localStorage.removeItem("token");
+
+  // depois, dar um refresh ou um router.push
+  location.reload();
+>>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
 }
 </script>
 
@@ -150,11 +209,19 @@ function closeMobileMenu() {
 .custom-title {
   font-family: "Work Sans", sans-serif;
   font-weight: 800;
+<<<<<<< HEAD
   color: white;
 }
 
 .nav-link {
   color: white;
+=======
+  color: #fff;
+}
+
+.nav-link {
+  color: #fff;
+>>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
   font-size: 14px;
   position: relative;
   transition: color 0.2s ease-in-out;
