@@ -156,11 +156,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useDialogStore } from "@/stores/dialogStore";
-import axios from "axios";
+import { useUserStore } from "@/stores/userStore";
 
 const dialogStore = useDialogStore();
+const userStore = useUserStore();
+const tab = ref("login");
 
-const tab = ref("signup");
+import axios from "axios";
 
 const registerFirstName = ref("");
 const registerLastName = ref("");
@@ -208,24 +210,16 @@ const login = async () => {
       email: loginEmail.value,
       password: loginPassword.value,
     });
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem("userName", res.data.name);
-    
+
+    // Use o userStore em vez de localStorage diretamente
+    userStore.setUser(res.data.name, res.data.token);
+
     dialogStore.loginDialog = false;
-
-    // Atualiza userName local (opcional, para o modal)
-    userName.value = res.data.name;
-    userDetails.value = { name: res.data.name };
-
-    // Dispara evento para avisar toolbar que user mudou
-    window.dispatchEvent(new Event("user-auth-changed"));
-
   } catch (error) {
     console.error(error);
     alert(error.response?.data?.error ?? "Erro.");
   }
 };
-
 
 const handleLogout = () => {
   localStorage.removeItem("userName");

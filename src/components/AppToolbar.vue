@@ -145,17 +145,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount } from "vue";
-import { useDialogStore } from "@/stores/dialogStore";
+import { ref, onMounted, computed } from "vue";
+import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "vue-router";
 
 const emit = defineEmits(["open-login", "open-register"]);
-const dialog = ref(true) // ou controle externo via prop
-const email = ref('')
-const password = ref('')
-const errorMessage = ref('')
 
-const dialogStore = useDialogStore();
+const userStore = useUserStore();
 const router = useRouter();
 
 const navItems = [
@@ -168,32 +164,11 @@ const navItems = [
   { icon: "mdi-music", to: "/musics", label: "Músicas", tooltip: "Musics" },
 ];
 
-async function login() {
-  try {
-    const response = await axios.post('http://localhost:3001/api/Login', {
-      email: email.value,
-      password: password.value
-    })
-
-    localStorage.setItem('userName', response.data.name)
-    localStorage.setItem('token', response.data.token)
-
-    // Atualiza o userName local para refletir a mudança imediata
-    updateUserName();
-
-    // Dispara o evento global para outros componentes, se houver
-    window.dispatchEvent(new Event('user-auth-changed'))
-
-    dialog.value = false
-  } catch (error) {
-    console.error(error)
-    errorMessage.value = error.response?.data?.error || 'Erro no login'
-  }
-}
-
-
 const mobileMenuOpen = ref(false);
 const isMobile = ref(false);
+
+// Use computed para reatividade
+const userName = computed(() => userStore.userName);
 
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value;
@@ -203,66 +178,38 @@ function closeMobileMenu() {
   mobileMenuOpen.value = false;
 }
 
-const userName = ref(null);
-
-function updateUserName() {
-  userName.value = localStorage.getItem("userName") || null;
-}
-
 onMounted(() => {
-  userName.value = localStorage.getItem("userName") || null;
-  window.addEventListener("user-auth-changed", updateUserName);
+  checkIfMobile();
+  window.addEventListener("resize", checkIfMobile);
 });
 
-onBeforeUnmount(() => {
-  window.removeEventListener("user-auth-changed", updateUserName);
-});
-
-
-
-// Função que verifica se a tela é mobile
 function checkIfMobile() {
-  isMobile.value = window.innerWidth <= 768; // ou qualquer outro limite que você queira para mobile
+  isMobile.value = window.innerWidth <= 768;
 }
 
-// Adiciona um ouvinte para mudanças de tamanho da tela
-watch(
-  () => window.innerWidth,
-  () => checkIfMobile()
-);
-
-// Função para abrir o modal de login
 function openLoginModal() {
-  emit("open-login", true);
+  emit("open-login");
+  mobileMenuOpen.value = false;
 }
 
-// Função para abrir o modal de registro
 function openRegisterModal() {
-  emit("open-register", true);
+  emit("open-register");
+  mobileMenuOpen.value = false;
 }
 
-// Função para abrir o modal de login no menu mobile
 function openLoginMobile() {
-  emit("open-login", true);
+  openLoginModal();
 }
 
-// Função para abrir o modal de registro no menu mobile
 function openRegisterMobile() {
-  emit("open-register", true);
+  openRegisterModal();
 }
 
-// Função para o logout
 function handleLogout() {
-  localStorage.removeItem("userName");
-  localStorage.removeItem("token");
-
-  // ✅ Dispara evento para avisar que houve mudança de autenticação
-  window.dispatchEvent(new Event("user-auth-changed"));
-
-  // ✅ Redireciona para a home
+  userStore.clearUser();
+  mobileMenuOpen.value = false;
   router.push("/");
 }
-
 </script>
 
 <style scoped>
