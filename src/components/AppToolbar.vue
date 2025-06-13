@@ -21,8 +21,12 @@
 
       <div class="d-flex align-center" style="gap: 20px">
         <template v-for="(item, index) in navItems" :key="index">
-          <v-btn v-if="!isMobile"
-            :to="item.to" variant="plain" class="nav-link text-uppercase" >
+          <v-btn
+            v-if="!isMobile"
+            :to="item.to"
+            variant="plain"
+            class="nav-link text-uppercase"
+          >
             <v-icon start>{{ item.icon }}</v-icon>
             {{ item.label }}
             <v-tooltip
@@ -146,6 +150,10 @@ import { useDialogStore } from "@/stores/dialogStore";
 import { useRouter } from "vue-router";
 
 const emit = defineEmits(["open-login", "open-register"]);
+const dialog = ref(true) // ou controle externo via prop
+const email = ref('')
+const password = ref('')
+const errorMessage = ref('')
 
 const dialogStore = useDialogStore();
 const router = useRouter();
@@ -160,6 +168,30 @@ const navItems = [
   { icon: "mdi-music", to: "/musics", label: "Músicas", tooltip: "Musics" },
 ];
 
+async function login() {
+  try {
+    const response = await axios.post('http://localhost:3001/api/Login', {
+      email: email.value,
+      password: password.value
+    })
+
+    localStorage.setItem('userName', response.data.name)
+    localStorage.setItem('token', response.data.token)
+
+    // Atualiza o userName local para refletir a mudança imediata
+    updateUserName();
+
+    // Dispara o evento global para outros componentes, se houver
+    window.dispatchEvent(new Event('user-auth-changed'))
+
+    dialog.value = false
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = error.response?.data?.error || 'Erro no login'
+  }
+}
+
+
 const mobileMenuOpen = ref(false);
 const isMobile = ref(false);
 
@@ -173,26 +205,25 @@ function closeMobileMenu() {
 
 const userName = ref(null);
 
-onMounted(() => {
-  // Verifica se há um nome de usuário armazenado no localStorage
+function updateUserName() {
   userName.value = localStorage.getItem("userName") || null;
+}
 
-  // Determina se é mobile
-  checkIfMobile();
-
-  // Adiciona evento de resize para garantir que isMobile seja atualizado
-  window.addEventListener("resize", checkIfMobile);
+onMounted(() => {
+  userName.value = localStorage.getItem("userName") || null;
+  window.addEventListener("user-auth-changed", updateUserName);
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener("user-auth-changed", updateUserName);
+});
+
+
 
 // Função que verifica se a tela é mobile
 function checkIfMobile() {
   isMobile.value = window.innerWidth <= 768; // ou qualquer outro limite que você queira para mobile
 }
-
-// Remove o evento de resize ao desmontar o componente
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", checkIfMobile);
-});
 
 // Adiciona um ouvinte para mudanças de tamanho da tela
 watch(
@@ -202,35 +233,37 @@ watch(
 
 // Função para abrir o modal de login
 function openLoginModal() {
-  emit('open-login', true);
+  emit("open-login", true);
 }
 
 // Função para abrir o modal de registro
 function openRegisterModal() {
-  emit('open-register', true);
+  emit("open-register", true);
 }
 
 // Função para abrir o modal de login no menu mobile
 function openLoginMobile() {
-  emit('open-login', true);
+  emit("open-login", true);
 }
 
 // Função para abrir o modal de registro no menu mobile
 function openRegisterMobile() {
-  emit('open-register', true);
+  emit("open-register", true);
 }
 
 // Função para o logout
 function handleLogout() {
   localStorage.removeItem("userName");
-  localStorage.removeItem("token"); // Se você estiver utilizando token
+  localStorage.removeItem("token");
 
-  // Redireciona para a página de login após logout
-  router.push("/login");
+  // ✅ Dispara evento para avisar que houve mudança de autenticação
+  window.dispatchEvent(new Event("user-auth-changed"));
+
+  // ✅ Redireciona para a home
+  router.push("/");
 }
+
 </script>
-
-
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css?family=Work+Sans:400,600");

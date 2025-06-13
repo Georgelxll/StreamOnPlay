@@ -210,17 +210,22 @@ const login = async () => {
     });
     localStorage.setItem("token", res.data.token);
     localStorage.setItem("userName", res.data.name);
-    alert("Login realizado!");
+    
     dialogStore.loginDialog = false;
 
-    // Atualiza o nome do usuário na UI
+    // Atualiza userName local (opcional, para o modal)
     userName.value = res.data.name;
-    userDetails.value = { name: res.data.name }; // se quiser usar essa mesma variável
+    userDetails.value = { name: res.data.name };
+
+    // Dispara evento para avisar toolbar que user mudou
+    window.dispatchEvent(new Event("user-auth-changed"));
+
   } catch (error) {
     console.error(error);
     alert(error.response?.data?.error ?? "Erro.");
   }
 };
+
 
 const handleLogout = () => {
   localStorage.removeItem("userName");
