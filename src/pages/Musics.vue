@@ -1,483 +1,245 @@
 <template>
   <v-app>
-    <v-main>
-      <v-container
-        fluid
-        :style="{
-          transition: 'background-color 1s ease',
-          backgroundColor: playing ? lightenColor(currentColor, 0.5) : '',
-          minHeight: '100vh',
-        }"
-      >
-        <!-- titulo e busca -->
-        <div v-if="!playing" class="py-8">
-          <h1 class="text-center mt-16">Musics</h1>
+    <v-main class="music-app">
+      <v-container class="py-10">
+        <!-- Título -->
+        <h1 class="title">Minhas Músicas</h1>
 
-          <v-card
-            class="mx-auto mb-10 mt-10"
-            color="surface-light"
-            max-width="400"
-          >
-            <v-card-text>
-              <v-row align="center" no-gutters>
-                <v-col cols="10">
-                  <v-text-field
-                    :loading="loading"
-                    append-inner-icon="mdi-magnify"
-                    density="compact"
-                    label="Search Musics"
-                    variant="solo"
-                    hide-details
-                    single-line
-                    @click:append-inner="onClick"
-                  />
-                </v-col>
-                <v-col cols="2" class="d-flex justify-end">
-                  <v-tooltip location="bottom" theme="dark" color="#2a9db4">
-                    <template v-slot:activator="{ props }">
-                      <v-btn
-                        icon
-                        variant="text"
-                        v-bind="props"
-                        @click="addMusicModal"
-                      >
-                        <v-icon>mdi-plus</v-icon>
-                      </v-btn>
-                    </template>
-                    Add a new music
-                  </v-tooltip>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-        </div>
+        <!-- Campo de busca -->
+        <v-text-field
+          v-model="search"
+          placeholder="Buscar músicas..."
+          prepend-inner-icon="mdi-magnify"
+          variant="solo"
+          hide-details
+          class="search-bar"
+          density="comfortable"
+          rounded
+        />
 
-        <!-- musicas -->
-        <v-row v-if="!playing" justify="center" align="stretch" dense>
-          <v-col cols="12" sm="6" md="3">
-            <v-card color="#1F7087">
-              <div class="d-flex flex-no-wrap justify-space-between">
-                <div>
-                  <v-card-title class="text-h6">Halcyon Days</v-card-title>
-                  <v-card-subtitle>Ellie Goulding</v-card-subtitle>
-                  <v-card-actions>
-                    <v-btn
-                      icon="mdi-play"
-                      variant="text"
-                      @click="
-                        playMusic(
-                          'Halcyon Days',
-                          'Ellie Goulding',
-                          'https://cdn.vuetifyjs.com/images/cards/foster.jpg',
-                          '#1F7087'
-                        )
-                      "
-                    />
-                  </v-card-actions>
-                </div>
-                <v-avatar class="ma-3" rounded="0" size="125">
-                  <v-img
-                    src="https://cdn.vuetifyjs.com/images/cards/foster.jpg"
-                  />
-                </v-avatar>
-              </div>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" sm="6" md="3">
-            <v-card color="#952175">
-              <div class="d-flex flex-no-wrap justify-space-between">
-                <div>
-                  <v-card-title class="text-h6">Lights</v-card-title>
-                  <v-card-subtitle>Ellie Goulding</v-card-subtitle>
-                  <v-card-actions>
-                    <v-btn
-                      icon="mdi-play"
-                      variant="text"
-                      @click="
-                        playMusic(
-                          'Lights',
-                          'Ellie Goulding',
-                          'https://cdn.vuetifyjs.com/images/cards/halcyon.png',
-                          '#952175'
-                        )
-                      "
-                    />
-                  </v-card-actions>
-                </div>
-                <v-avatar class="ma-3" rounded="0" size="125">
-                  <v-img
-                    src="https://cdn.vuetifyjs.com/images/cards/halcyon.png"
-                  />
-                </v-avatar>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- reprodução -->
-        <div
-          v-if="playing"
-          class="d-flex flex-column align-center justify-center"
-          style="height: 100vh"
-        >
-          <!-- Botão de voltar -->
-          <div style="position: absolute; top: 90px; left: 20px">
-            <v-btn
-              icon="mdi-chevron-left"
-              @click="showFooterOn"
-              color="black"
-              variant="text"
-            ></v-btn>
-          </div>
-          <!-- Botão close -->
-          <div style="position: absolute; top: 90px; right: 20px">
-            <v-btn
-              icon="mdi-close"
-              @click="stopMusic"
-              color="black"
-              variant="text"
-            ></v-btn>
-          </div>
-
-          <v-card
-            :style="{
-              height: '500px',
-              width: '300px',
-              borderRadius: '20px',
-              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-              backgroundColor: currentColor,
-              transition: 'all 0.5s ease',
-            }"
-            class="d-flex flex-column align-center justify-center pa-6"
-          >
-            <v-avatar
-              size="150"
-              class="mb-4"
-              style="
-                box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-                border: 5px solid white;
-              "
+        <!-- Cards das músicas ou mensagem de não encontrada -->
+        <div v-if="filteredSongs.length > 0">
+          <v-row class="mt-6" dense>
+            <v-col
+              v-for="song in filteredSongs"
+              :key="song.id"
+              cols="12"
+              sm="6"
+              md="4"
+              lg="3"
             >
-              <v-img :src="currentCover" />
-            </v-avatar>
-            <v-card-title class="text-center text-h6 font-weight-medium mb-2">
-              {{ currentTitle }}
-            </v-card-title>
-            <v-card-subtitle
-              class="text-center text-body-2 text-grey-darken-1 mb-4"
-            >
-              {{ currentArtist }}
-            </v-card-subtitle>
-            <v-row align="center" justify="space-around" class="w-100 mb-2">
-              <v-icon>mdi-music-note</v-icon>
-              <v-icon color="red">mdi-heart</v-icon>
-              <v-icon>mdi-volume-high</v-icon>
-            </v-row>
-
-            <div
-              class="d-flex align-center justify-space-between w-100 px-4 text-caption mb-1"
-            >
-              <span>0:00</span>
-              <span>1:20</span>
-            </div>
-
-            <v-slider
-              color="white"
-              track-color="grey-lighten-1"
-              thumb-label="always"
-              class="w-100"
-              v-model="progress"
-              min="0"
-              max="100"
-            />
-
-            <v-btn
-              icon
-              size="large"
-              class="mt-6"
-              :color="paused ? 'white' : 'grey-darken-2'"
-              @click="togglePause"
-            >
-              <v-icon size="36">{{ paused ? "mdi-play" : "mdi-pause" }}</v-icon>
-            </v-btn>
-          </v-card>
-        </div>
-
-        <v-dialog
-          v-model="showAddMusicDialog"
-          max-width="420px"
-          persistent
-          hide-overlay
-        >
-          <v-card class="pa-6" style="background-color: #000" dark>
-            <v-btn
-              icon
-              class="close-btn"
-              @click="closeAddMusic"
-              style="position: absolute; top: 18px; right: 22px; color: white"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-
-            <v-card-title class="justify-center">
-              <h2 class="text-white text-h5 font-weight-bold text-center">
-                Adicionar Música
-              </h2>
-            </v-card-title>
-
-            <v-card-text>
-              <v-form>
-                <v-text-field
-                  v-model="musicTitle"
-                  label="Título da música"
-                  dense
-                  hide-details
-                  color="white"
-                  variant="outlined"
-                  bg-color="#1C1C1C"
-                  class="input-white mb-4"
-                  required
-                ></v-text-field>
-
-                <v-text-field
-                  v-model="musicArtist"
-                  label="Artista"
-                  dense
-                  hide-details
-                  color="white"
-                  variant="outlined"
-                  bg-color="#1C1C1C"
-                  class="input-white mb-4"
-                  required
-                ></v-text-field>
-
-                <v-text-field
-                  v-model="musicUrl"
-                  label="URL da música"
-                  dense
-                  hide-details
-                  color="white"
-                  variant="outlined"
-                  bg-color="#1C1C1C"
-                  class="input-white mb-6"
-                  required
-                ></v-text-field>
-
-                <v-btn
-                  @click="saveMusic"
-                  block
-                  class="text-white green-btn text-uppercase font-weight-bold"
-                  size="large"
-                >
-                  Salvar Música
-                </v-btn>
-              </v-form>
-            </v-card-text>
-          </v-card>
-        </v-dialog>
-        <v-footer
-          v-if="showFooter"
-          app
-          class="px-4 py-2"
-          height="80"
-          :style="{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: playing ? lightenColor(currentColor, 0.5) : '',
-            zIndex: 1000,
-            transition: 'transform 0.3s ease, background-color 1s ease',
-          }"
-        >
-          <v-row align="center" class="w-100" no-gutters>
-            <v-col cols="auto">
-              <v-btn
-                icon="mdi-close"
-                @click="stopMusic"
-                color="black"
-                variant="text"
-              ></v-btn>
-              <v-avatar size="56" class="ml-4">
-                <v-img :src="currentCover" />
-              </v-avatar>
-            </v-col>
-
-            <v-col>
-              <div class="text-black text-body-2 font-weight-medium ml-4">
-                {{ currentTitle }}
-              </div>
-              <div class="text-grey text-caption ml-4">
-                {{ currentArtist }}
-              </div>
-            </v-col>
-
-            <v-col cols="auto" class="d-flex align-center">
-              <v-btn icon @click="togglePause" color="white">
-                <v-icon>{{ paused ? "mdi-play" : "mdi-pause" }}</v-icon>
-              </v-btn>
-              <v-btn icon color="white" class="ml-4">
-                <v-icon>mdi-skip-next</v-icon>
-              </v-btn>
+              <v-card class="music-card" rounded="lg" elevation="4">
+                <v-img
+                  :src="song.cover"
+                  height="180px"
+                  cover
+                  class="music-img"
+                />
+                <v-card-text>
+                  <div class="song-title">{{ song.title }}</div>
+                  <div class="song-artist">{{ song.artist }}</div>
+                </v-card-text>
+                <v-card-actions class="justify-end">
+                  <v-btn icon size="small" color="green-accent-4">
+                    <v-icon>mdi-play-circle</v-icon>
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
             </v-col>
           </v-row>
-        </v-footer>
+        </div>
+        <div v-else class="text-center mt-10 not-found-msg">
+          <v-icon size="40" color="grey">mdi-magnify-close</v-icon>
+          <p class="text-grey text-subtitle-1 mt-2">
+            Nenhuma música encontrada
+          </p>
+        </div>
       </v-container>
+
+      <!-- Botão flutuante -->
+      <v-btn
+        icon
+        class="fab"
+        color="green-accent-4"
+        @click="openAddMusic = true"
+      >
+        <v-icon size="32">mdi-plus</v-icon>
+      </v-btn>
+
+      <!-- Modal de Adicionar Música -->
+      <v-dialog v-model="openAddMusic" max-width="500px" persistent>
+        <v-card class="add-music-modal">
+          <v-card-title>
+            <span class="text-h6">Adicionar Nova Música</span>
+          </v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="newSong.title"
+              label="Título"
+              outlined
+              dense
+            />
+            <v-text-field
+              v-model="newSong.artist"
+              label="Artista"
+              outlined
+              dense
+            />
+            <v-text-field
+              v-model="newSong.cover"
+              label="URL da Capa"
+              outlined
+              dense
+              placeholder="https://..."
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn text @click="openAddMusic = false">Cancelar</v-btn>
+            <v-btn color="green-accent-4" @click="saveSong">Salvar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
-const showAddMusicDialog = ref(false);
+const search = ref("");
+const songs = ref([
+  {
+    id: 1,
+    title: "Nocturnal Drive",
+    artist: "Digital Echoes",
+    cover:
+      "https://images.unsplash.com/photo-1583244532610-2a234e7c3eca?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    id: 2,
+    title: "Velvet Skies",
+    artist: "Lunar Soul",
+    cover:
+      "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    id: 3,
+    title: "Crystal Dreams",
+    artist: "Nightline",
+    cover:
+      "https://images.unsplash.com/photo-1544785349-c4a5301826fd?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: 4,
+    title: "Electric Sunset",
+    artist: "Neon Lights",
+    cover:
+      "https://plus.unsplash.com/premium_photo-1682125768864-c80b650614f3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+]);
 
-function addMusicModal() {
-  showAddMusicDialog.value = true;
-}
+const filteredSongs = computed(() => {
+  return songs.value.filter((song) =>
+    song.title.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
 
-function addMusicURL() {}
+const openAddMusic = ref(false);
+const newSong = ref({ title: "", artist: "", cover: "" });
 
-// estados
-const loaded = ref(false);
-const loading = ref(false);
-const paused = ref(false);
-
-function onClick() {
-  loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-    loaded.value = true;
-  }, 2000);
-}
-
-const playing = ref(false);
-const showFooter = ref(false);
-const progress = ref(0);
-const currentTitle = ref("");
-const currentArtist = ref("");
-const currentCover = ref("");
-const currentColor = ref("");
-
-function playMusic(title, artist, cover, color) {
-  currentTitle.value = title;
-  currentArtist.value = artist;
-  currentCover.value = cover;
-  currentColor.value = color;
-  playing.value = true;
-  showFooter.value = false; // esconde o footer ao dar play
-}
-
-function stopMusic() {
-  playing.value = false;
-  paused.value = false;
-  showFooter.value = false;
-}
-
-function togglePause() {
-  paused.value = !paused.value;
-}
-
-function showFooterOn() {
-  playing.value = false;
-  showFooter.value = true; // mostra o footer ao voltar
-}
-
-function closeAddMusic() {
-  showAddMusicDialog.value = false;
-}
-
-// Função para clarear a cor (hex) dinamicamente
-function lightenColor(hex, amount = 0.5) {
-  let col = hex.replace("#", "");
-  if (col.length === 3) {
-    col = col
-      .split("")
-      .map((c) => c + c)
-      .join("");
+function saveSong() {
+  if (!newSong.value.title || !newSong.value.artist || !newSong.value.cover) {
+    alert("Preencha todos os campos!");
+    return;
   }
 
-  const num = parseInt(col, 16);
-  const r = Math.min(255, ((num >> 16) & 0xff) + 255 * amount);
-  const g = Math.min(255, ((num >> 8) & 0xff) + 255 * amount);
-  const b = Math.min(255, (num & 0xff) + 255 * amount);
+  songs.value.push({
+    id: Date.now(),
+    title: newSong.value.title,
+    artist: newSong.value.artist,
+    cover: newSong.value.cover,
+  });
 
-  return `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+  newSong.value = { title: "", artist: "", cover: "" };
+  openAddMusic.value = false;
 }
 </script>
+
 <style scoped>
-.v-dialog__content {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
+.music-app {
+  background-color: #121212;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding-top: 64px; /* espaço para a AppToolbar */
 }
 
-.close-btn {
-  position: absolute;
-  top: 18px;
-  right: 22px;
-  font-size: 1.5rem;
-  background: transparent;
-  border: none;
-  color: White;
-  cursor: pointer;
+@media (max-width: 600px) {
+  .music-app {
+    padding-top: 56px; /* espaço menor para mobile */
+  }
 }
 
-.input-white .v-input__control {
-  background-color: #12833e !important;
-  border-radius: 12px;
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1db954;
+  margin-bottom: 24px;
 }
 
-::v-deep(.input-white .v-field-label) {
-  color: white !important;
-  font-size: 16px;
-  font-weight: 500;
+.search-bar .v-field__control {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  color: #e0e0e0;
 }
 
-::v-deep(.input-white .v-field.v-field--focused .v-field-label),
-::v-deep(.input-white .v-field.v-field--dirty .v-field-label) {
-  color: white !important;
-  font-size: 17px;
+.music-card {
+  background-color: #1e1e1e;
+  transition: 0.3s ease;
+  border: 1px solid transparent;
+  overflow: hidden;
+}
+
+.music-card:hover {
+  border-color: #1db954;
+  box-shadow: 0 0 15px #1db95450;
+}
+
+.music-img {
+  border-radius: 0 !important;
+}
+
+.song-title {
   font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+  color: #ffffff;
 }
 
-.green-btn {
-  background-color: #12833e;
-  color: black;
-  font-weight: 600;
-  border-radius: 50px;
+.song-artist {
+  font-size: 0.875rem;
+  color: #b3b3b3;
 }
 
-.green-btn:hover {
-  background-color: #10702e;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: #1db954;
+  color: #000;
 }
 
-.v-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+.fab:hover {
+  background-color: #1ed760;
 }
 
-.v-footer {
-  transform: translateY(100%);
-  animation: slide-up 0.4s ease-out forwards;
+.add-music-modal {
+  background-color: #1e1e1e;
+  color: #fff;
 }
 
-@keyframes slide-up {
-  to {
-    transform: translateY(0%);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.not-found-msg {
+  color: #aaa;
 }
 </style>
