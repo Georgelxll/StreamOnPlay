@@ -37,7 +37,9 @@
           </v-btn>
         </template>
 
+        <!-- Se o usuário NÃO estiver autenticado -->
         <v-btn
+          v-if="!userName"
           variant="plain"
           class="nav-link text-uppercase"
           @click="emit('open-register')"
@@ -45,19 +47,36 @@
           SignUp
         </v-btn>
         <v-btn
+          v-if="!userName"
           variant="plain"
           class="nav-link text-uppercase"
           @click="emit('open-login')"
         >
           Login
         </v-btn>
+
+        <!-- Se o usuário ESTÁ autenticado -->
+        <v-menu v-if="userName">
+          <template #activator="{ props }">
+            <v-btn variant="plain" v-bind="props">
+              <span style="color: #fff">
+                {{ userName }}
+              </span>
+              <v-icon icon="mdi-menu-down" color="#fff" />
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item @click="handleLogout"> Sair </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </div>
   </v-app-bar>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 const emit = defineEmits(["open-login", "open-register"]);
 
@@ -69,26 +88,41 @@ const navItems = [
   },
   { icon: "mdi-music", to: "/musics", tooltip: "Musics" },
 ];
+
+// Pegue o nome do usuário do localStorage
+const userName = ref(null);
+
+onMounted(() => {
+  userName.value = localStorage.getItem("userName") || null;
+});
+
+// Implementação do logout opcional
+function handleLogout() {
+  localStorage.removeItem("userName");
+
+  // opcional: também o token
+  localStorage.removeItem("token");
+
+  // depois, dar um refresh ou um router.push
+  location.reload();
+}
 </script>
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css?family=Work+Sans:400,600");
 
-/* Navbar com fundo preto */
 .navbar-black {
-  background-color: #000 !important; /* Fundo preto */
+  background-color: #000 !important;
 }
 
-/* Título com cor branca */
 .custom-title {
   font-family: "Work Sans", sans-serif;
   font-weight: 800;
-  color: white; /* Texto branco */
+  color: #fff;
 }
 
-/* Estilo dos links de navegação */
 .nav-link {
-  color: white; /* Cor do texto branco */
+  color: #fff;
   font-size: 14px;
   position: relative;
   transition: color 0.2s ease-in-out;
@@ -98,16 +132,15 @@ const navItems = [
   align-items: center;
 }
 
-/* Hover para mudar para verde */
 .nav-link:hover {
-  color: #1db954; /* Cor verde no hover */
+  color: #1db954;
 }
 
 .nav-link::before {
   content: "";
   display: block;
   height: 5px;
-  background-color: #1db954; /* Linha verde no hover */
+  background-color: #1db954;
   position: absolute;
   top: -25.9px;
   left: 0;
@@ -115,14 +148,12 @@ const navItems = [
   transition: width 250ms ease-in-out;
 }
 
-/* Expandir a linha verde no hover */
 .nav-link:hover::before {
   width: 100%;
 }
 
-/* Garantir que o fundo da aplicação seja preto */
 .v-application {
-  background-color: #000 !important; /* Fundo preto */
+  background-color: #000 !important;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

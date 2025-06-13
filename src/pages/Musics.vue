@@ -98,13 +98,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 
 const search = ref("");
 
-const songs = ref([
-  // suas músicas já presentes...
-]);
+const songs = ref([]);
 
 const filteredSongs = computed(() => {
   return songs.value.filter(
@@ -114,9 +112,134 @@ const filteredSongs = computed(() => {
   );
 });
 
-// Dialog
+// Autenticação
+const token = ref(null);
+const email = ref("");
+const password = ref("");
+const isLogin = ref(false);
+const showLoginDialog = ref(true);
+
+async function login() {
+  if (!email.value || !password.value) return;
+
+  try {
+    const response = await fetch("http://localhost:3001/api/Login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.value, password: password.value }),
+    });
+
+    if (!response.ok) {
+      showSnackbar("Dados incorretos!", "red");
+
+      return;
+    }
+
+    const result = await response.json();
+
+    token.value = result.token;
+    isLogin.value = true;
+
+    showLoginDialog.value = false;
+
+    showSnackbar("Login realizado!", "green");
+
+    // Carregar músicas autenticadas
+    await fetchPrivateSongs();
+  } catch (err) {
+    showSnackbar(err.message, "red");
+
+    console.error(err);
+  }
+}
+
+async function fetchPrivateSongs() {
+  try {
+    const response = await fetch("http://localhost:3001/api/songs", {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (response.ok) {
+      songs.value = await response.json();
+    } else {
+      showSnackbar("Erro ao obter as músicas.", "red");
+
+      console.error(await response.text());
+    }
+  } catch (err) {
+    showSnackbar(err.message, "red");
+
+    console.error(err);
+  }
+}
+
+async function fetchPublicSongs() {
+  try {
+    // Busca públicas
+    const response = await fetch("http://localhost:3001/api/songs/public");
+
+    if (response.ok) {
+      songs.value = await response.json();
+    } else {
+      showSnackbar("Erro ao obter as músicas.", "red");
+
+      console.error(await response.text());
+    }
+  } catch (err) {
+    showSnackbar(err.message, "red");
+
+    console.error(err);
+  }
+}
+
+// Adicionar nova música
 const openAddMusic = ref(false);
 const newSong = ref({ url: "" });
+
+async function saveSong() {
+  const { url } = newSong.value;
+
+  if (!url) {
+    showSnackbar("Informe uma URL!", "red");
+
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:3001/api/songs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.value}`,
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (response.ok) {
+      const newStored = await response.json();
+
+      songs.value.unshift({
+        id: Date.now(),
+        title: newStored.title,
+        artist: newStored.artist,
+        cover: newStored.cover,
+      });
+
+      newSong.value = { url: "" };
+      openAddMusic.value = false;
+
+      showSnackbar("Música adicionada!", "green");
+    } else {
+      showSnackbar("Erro ao acrescentar música.", "red");
+
+      console.error(await response.text());
+    }
+  } catch (err) {
+    showSnackbar(err.message, "red");
+
+    console.error(err);
+  }
+}
 
 // Snackbar
 const snackbar = ref(false);
@@ -130,46 +253,7 @@ function showSnackbar(message, color = "green") {
   snackbar.value = true;
 }
 
-async function saveSong() {
-  const { url } = newSong.value;
-
-  if (!url) {
-    showSnackbar("Informe uma URL!", "red");
-
-    return;
-  }
-
-  try {
-    const response = await fetch("http://localhost:3001/api/download", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "Erro ao adicionar música.");
-    }
-
-    // Adiciona a nova música na lista
-    songs.value.push({
-      id: Date.now(),
-      title: result.title,
-      artist: result.artist,
-      cover: result.cover,
-    });
-
-    newSong.value = { url: "" };
-    openAddMusic.value = false;
-
-    showSnackbar("Música adicionada com sucesso!", "green");
-  } catch (err) {
-    showSnackbar(err.message || "Erro ao acrescentar música.", "red");
-
-    console.error(err);
-  }
-}
+onMounted(fetchPublicSongs);
 </script>
 
 <style scoped>
