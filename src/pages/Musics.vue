@@ -122,10 +122,19 @@
           style="height: 100vh"
         >
           <!-- Botão de voltar -->
-          <div style="position: absolute; top: 90px; left: 20px;">
+          <div style="position: absolute; top: 90px; left: 20px">
             <v-btn
               icon="mdi-chevron-left"
-              @click="closeMusic"
+              @click="showFooterOn"
+              color="black"
+              variant="text"
+            ></v-btn>
+          </div>
+          <!-- Botão close -->
+          <div style="position: absolute; top: 90px; right: 20px">
+            <v-btn
+              icon="mdi-close"
+              @click="stopMusic"
               color="black"
               variant="text"
             ></v-btn>
@@ -267,6 +276,53 @@
             </v-card-text>
           </v-card>
         </v-dialog>
+        <v-footer
+          v-if="showFooter"
+          app
+          class="px-4 py-2"
+          height="80"
+          :style="{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: playing ? lightenColor(currentColor, 0.5) : '',
+            zIndex: 1000,
+            transition: 'transform 0.3s ease, background-color 1s ease',
+          }"
+        >
+          <v-row align="center" class="w-100" no-gutters>
+            <v-col cols="auto">
+              <v-btn
+                icon="mdi-close"
+                @click="stopMusic"
+                color="black"
+                variant="text"
+              ></v-btn>
+              <v-avatar size="56" class="ml-4">
+                <v-img :src="currentCover" />
+              </v-avatar>
+            </v-col>
+
+            <v-col>
+              <div class="text-black text-body-2 font-weight-medium ml-4">
+                {{ currentTitle }}
+              </div>
+              <div class="text-grey text-caption ml-4">
+                {{ currentArtist }}
+              </div>
+            </v-col>
+
+            <v-col cols="auto" class="d-flex align-center">
+              <v-btn icon @click="togglePause" color="white">
+                <v-icon>{{ paused ? "mdi-play" : "mdi-pause" }}</v-icon>
+              </v-btn>
+              <v-btn icon color="white" class="ml-4">
+                <v-icon>mdi-skip-next</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-footer>
       </v-container>
     </v-main>
   </v-app>
@@ -297,6 +353,8 @@ function onClick() {
 }
 
 const playing = ref(false);
+const showFooter = ref(false);
+const progress = ref(0);
 const currentTitle = ref("");
 const currentArtist = ref("");
 const currentCover = ref("");
@@ -308,20 +366,22 @@ function playMusic(title, artist, cover, color) {
   currentCover.value = cover;
   currentColor.value = color;
   playing.value = true;
+  showFooter.value = false; // esconde o footer ao dar play
 }
 
 function stopMusic() {
   playing.value = false;
   paused.value = false;
+  showFooter.value = false;
 }
 
 function togglePause() {
   paused.value = !paused.value;
 }
 
-function closeMusic() {
+function showFooterOn() {
   playing.value = false;
-  stopMusic();
+  showFooter.value = true; // mostra o footer ao voltar
 }
 
 function closeAddMusic() {
@@ -397,6 +457,17 @@ function lightenColor(hex, amount = 0.5) {
 .v-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.v-footer {
+  transform: translateY(100%);
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+@keyframes slide-up {
+  to {
+    transform: translateY(0%);
+  }
 }
 
 @keyframes fadeIn {
