@@ -1,4 +1,5 @@
 <template>
+  <!-- Logo -->
   <v-app-bar flat height="70" class="navbar-black">
     <div class="d-flex align-center justify-space-between w-100 px-6">
       <!-- Logo -->
@@ -50,7 +51,7 @@
         >
       </div>
 
-<<<<<<< HEAD
+      <<<<<<< HEAD
       <!-- Ícone hamburguer (visível apenas quando menu fechado) -->
       <div v-if="!mobileMenuOpen" class="d-flex d-md-none">
         <div class="hamburger" @click="toggleMobileMenu">
@@ -58,7 +59,7 @@
           <span></span>
           <span></span>
         </div>
-=======
+        =======
         <!-- Se o usuário NÃO estiver autenticado -->
         <v-btn
           v-if="!userName"
@@ -92,7 +93,7 @@
             <v-list-item @click="handleLogout"> Sair </v-list-item>
           </v-list>
         </v-menu>
->>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
+        >>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
       </div>
     </div>
 
