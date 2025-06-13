@@ -1,7 +1,7 @@
 <template>
   <v-app-bar flat height="70" class="navbar-black">
     <div class="d-flex align-center justify-space-between w-100 px-6">
-      <!-- Logo + ícone à esquerda -->
+      <!-- Logo -->
       <v-toolbar-title
         class="text-h6 font-weight-bold custom-title d-flex align-center"
       >
@@ -20,8 +20,8 @@
         </router-link>
       </v-toolbar-title>
 
-      <!-- Navegação -->
-      <div class="d-flex align-center" style="gap: 20px">
+      <!-- Menu desktop -->
+      <div class="d-none d-md-flex align-center" style="gap: 20px">
         <template v-for="(item, index) in navItems" :key="index">
           <v-btn :to="item.to" variant="plain" class="nav-link text-uppercase">
             <v-icon start>{{ item.icon }}</v-icon>
@@ -36,59 +36,125 @@
             </v-tooltip>
           </v-btn>
         </template>
+        <v-btn
+          variant="plain"
+          class="nav-link text-uppercase"
+          @click="dialogStore.openRegister()"
+          >SignUp</v-btn
+        >
+        <v-btn
+          variant="plain"
+          class="nav-link text-uppercase"
+          @click="dialogStore.openLogin()"
+          >Login</v-btn
+        >
+      </div>
 
-        <v-btn
-          variant="plain"
-          class="nav-link text-uppercase"
-          @click="emit('open-register')"
-        >
-          SignUp
-        </v-btn>
-        <v-btn
-          variant="plain"
-          class="nav-link text-uppercase"
-          @click="emit('open-login')"
-        >
-          Login
-        </v-btn>
+      <!-- Ícone hamburguer (visível apenas quando menu fechado) -->
+      <div v-if="!mobileMenuOpen" class="d-flex d-md-none">
+        <div class="hamburger" @click="toggleMobileMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
+
+    <!-- Dropdown menu fullscreen -->
+    <transition name="fade-slide">
+      <div v-if="mobileMenuOpen" class="mobile-menu">
+        <!-- Botão X -->
+        <div class="hamburger close-x" @click="toggleMobileMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="menu-content">
+          <template v-for="(item, index) in navItems" :key="index">
+            <router-link
+              :to="item.to"
+              class="mobile-link"
+              @click="closeMobileMenu"
+            >
+              <v-icon class="mr-2">{{ item.icon }}</v-icon>
+              {{ item.label }}
+            </router-link>
+          </template>
+
+          <v-btn
+            class="mobile-link"
+            variant="text"
+            @click="
+              () => {
+                closeMobileMenu();
+                dialogStore.openRegister();
+              }
+            "
+          >
+            SignUp
+          </v-btn>
+
+          <v-btn
+            class="mobile-link"
+            variant="text"
+            @click="
+              () => {
+                closeMobileMenu();
+                dialogStore.openLogin();
+              }
+            "
+          >
+            Login
+          </v-btn>
+        </div>
+      </div>
+    </transition>
   </v-app-bar>
 </template>
 
 <script setup>
 import { ref } from "vue";
+import { useDialogStore } from "@/stores/dialogStore";
 
-const emit = defineEmits(["open-login", "open-register"]);
+const dialogStore = useDialogStore();
 
 const navItems = [
   {
     icon: "mdi-robot",
     to: "/bot-discord",
+    label: "Bot",
     tooltip: "Bot Discord",
   },
-  { icon: "mdi-music", to: "/musics", tooltip: "Musics" },
+  { icon: "mdi-music", to: "/musics", label: "Músicas", tooltip: "Musics" },
 ];
+
+const mobileMenuOpen = ref(false);
+
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+}
+
+function closeMobileMenu() {
+  mobileMenuOpen.value = false;
+}
 </script>
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css?family=Work+Sans:400,600");
 
-/* Navbar com fundo preto */
 .navbar-black {
-  background-color: #000 !important; /* Fundo preto */
+  background-color: #000 !important;
 }
 
-/* Título com cor branca */
 .custom-title {
   font-family: "Work Sans", sans-serif;
   font-weight: 800;
-  color: white; /* Texto branco */
+  color: white;
 }
 
-/* Estilo dos links de navegação */
 .nav-link {
-  color: white; /* Cor do texto branco */
+  color: white;
   font-size: 14px;
   position: relative;
   transition: color 0.2s ease-in-out;
@@ -98,16 +164,15 @@ const navItems = [
   align-items: center;
 }
 
-/* Hover para mudar para verde */
 .nav-link:hover {
-  color: #1db954; /* Cor verde no hover */
+  color: #1db954;
 }
 
 .nav-link::before {
   content: "";
   display: block;
   height: 5px;
-  background-color: #1db954; /* Linha verde no hover */
+  background-color: #1db954;
   position: absolute;
   top: -25.9px;
   left: 0;
@@ -115,16 +180,110 @@ const navItems = [
   transition: width 250ms ease-in-out;
 }
 
-/* Expandir a linha verde no hover */
 .nav-link:hover::before {
   width: 100%;
 }
 
-/* Garantir que o fundo da aplicação seja preto */
 .v-application {
-  background-color: #000 !important; /* Fundo preto */
+  background-color: #000 !important;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* -------------------------------
+   Estilo do Hamburguer
+----------------------------------*/
+.hamburger {
+  width: 30px;
+  height: 24px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 1001;
+}
+
+.hamburger span {
+  background: white;
+  height: 3px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Botão X */
+.close-x span:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+.close-x span:nth-child(2) {
+  opacity: 0;
+}
+.close-x span:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* Posicionamento do X dentro do menu */
+.close-x {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+/* -------------------------------
+   Menu Mobile Fullscreen
+----------------------------------*/
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  font-family: "Work Sans", sans-serif;
+}
+
+.mobile-link {
+  color: white;
+  font-size: 20px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.mobile-link:hover {
+  color: #1db954;
+}
+
+/* -------------------------------
+   Transição Suave do Menu
+----------------------------------*/
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+.fade-slide-enter-to {
+  transform: translateY(0);
+  opacity: 1;
+}
+.fade-slide-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
 }
 </style>
