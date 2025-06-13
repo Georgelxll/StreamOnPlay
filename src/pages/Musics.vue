@@ -70,23 +70,11 @@
           </v-card-title>
           <v-card-text>
             <v-text-field
-              v-model="newSong.title"
-              label="Título"
+              v-model="newSong.url"
+              label="URL do YouTube"
               outlined
               dense
-            />
-            <v-text-field
-              v-model="newSong.artist"
-              label="Artista"
-              outlined
-              dense
-            />
-            <v-text-field
-              v-model="newSong.cover"
-              label="URL da Capa"
-              outlined
-              dense
-              placeholder="https://..."
+              placeholder="https://youtu.be/E-pN_h6RQSo ou https://www.youtube.com/watch?v=E-pN_h6RQSo"
             />
           </v-card-text>
           <v-card-actions>
@@ -115,48 +103,25 @@ import { ref, computed } from "vue";
 const search = ref("");
 
 const songs = ref([
-  {
-    id: 1,
-    title: "Nocturnal Drive",
-    artist: "Digital Echoes",
-    cover:
-      "https://images.unsplash.com/photo-1583244532610-2a234e7c3eca?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 2,
-    title: "Velvet Skies",
-    artist: "Lunar Soul",
-    cover:
-      "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    id: 3,
-    title: "Crystal Dreams",
-    artist: "Nightline",
-    cover:
-      "https://images.unsplash.com/photo-1544785349-c4a5301826fd?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 4,
-    title: "Electric Sunset",
-    artist: "Neon Lights",
-    cover:
-      "https://plus.unsplash.com/premium_photo-1682125768864-c80b650614f3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
+  // suas músicas já presentes...
 ]);
 
 const filteredSongs = computed(() => {
-  return songs.value.filter((song) =>
-    song.title.toLowerCase().includes(search.value.toLowerCase())
+  return songs.value.filter(
+    (song) =>
+      song.title.toLowerCase().includes(search.value.toLowerCase()) ||
+      song.artist.toLowerCase().includes(search.value.toLowerCase())
   );
 });
 
+// Dialog
 const openAddMusic = ref(false);
-const newSong = ref({ title: "", artist: "", cover: "" });
+const newSong = ref({ url: "" });
 
 // Snackbar
 const snackbar = ref(false);
 const snackbarColor = ref("green");
+
 const snackbarText = ref("");
 
 function showSnackbar(message, color = "green") {
@@ -165,19 +130,12 @@ function showSnackbar(message, color = "green") {
   snackbar.value = true;
 }
 
-// Função para extrair thumbnail de vídeo do YouTube
-function getYouTubeThumbnail(url) {
-  const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : url;
-}
-
 async function saveSong() {
-  const { title, artist, cover: url } = newSong.value;
+  const { url } = newSong.value;
 
-  if (!title || !artist || !url) {
-    showSnackbar("Preencha todos os campos!", "red");
+  if (!url) {
+    showSnackbar("Informe uma URL!", "red");
+
     return;
   }
 
@@ -185,29 +143,31 @@ async function saveSong() {
     const response = await fetch("http://localhost:3001/api/download", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, artist, url }),
+      body: JSON.stringify({ url }),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error || "Erro ao adicionar música");
+      throw new Error(result.error || "Erro ao adicionar música.");
     }
 
-    // Usar thumbnail retornado
+    // Adiciona a nova música na lista
     songs.value.push({
       id: Date.now(),
-      title,
-      artist,
+      title: result.title,
+      artist: result.artist,
       cover: result.cover,
     });
 
-    newSong.value = { title: "", artist: "", cover: "" };
+    newSong.value = { url: "" };
     openAddMusic.value = false;
 
     showSnackbar("Música adicionada com sucesso!", "green");
   } catch (err) {
-    showSnackbar(err.message || "Erro ao adicionar música", "red");
+    showSnackbar(err.message || "Erro ao acrescentar música.", "red");
+
+    console.error(err);
   }
 }
 </script>
