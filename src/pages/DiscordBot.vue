@@ -56,7 +56,6 @@
 
         <div class="cta-wrapper mt-6 mb-12">
           <v-btn color="green-accent-4" class="cta-button" size="large">
-            <v-icon left>mdi-discord</v-icon>
             Adicionar ao Discord
           </v-btn>
         </div>

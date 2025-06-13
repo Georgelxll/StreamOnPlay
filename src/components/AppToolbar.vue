@@ -1,8 +1,6 @@
 <template>
-  <!-- Logo -->
   <v-app-bar flat height="70" class="navbar-black">
     <div class="d-flex align-center justify-space-between w-100 px-6">
-      <!-- Logo -->
       <v-toolbar-title
         class="text-h6 font-weight-bold custom-title d-flex align-center"
       >
@@ -21,10 +19,10 @@
         </router-link>
       </v-toolbar-title>
 
-      <!-- Menu desktop -->
-      <div class="d-none d-md-flex align-center" style="gap: 20px">
+      <div class="d-flex align-center" style="gap: 20px">
         <template v-for="(item, index) in navItems" :key="index">
-          <v-btn :to="item.to" variant="plain" class="nav-link text-uppercase">
+          <v-btn v-if="!isMobile"
+            :to="item.to" variant="plain" class="nav-link text-uppercase" >
             <v-icon start>{{ item.icon }}</v-icon>
             {{ item.label }}
             <v-tooltip
@@ -37,49 +35,27 @@
             </v-tooltip>
           </v-btn>
         </template>
-        <v-btn
-          variant="plain"
-          class="nav-link text-uppercase"
-          @click="dialogStore.openRegister()"
-          >SignUp</v-btn
-        >
-        <v-btn
-          variant="plain"
-          class="nav-link text-uppercase"
-          @click="dialogStore.openLogin()"
-          >Login</v-btn
-        >
-      </div>
 
-      <<<<<<< HEAD
-      <!-- Ícone hamburguer (visível apenas quando menu fechado) -->
-      <div v-if="!mobileMenuOpen" class="d-flex d-md-none">
-        <div class="hamburger" @click="toggleMobileMenu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        =======
-        <!-- Se o usuário NÃO estiver autenticado -->
+        <!-- Botões de Login e SignUp (visíveis apenas se o usuário não estiver autenticado) -->
         <v-btn
-          v-if="!userName"
+          v-if="!userName && !isMobile"
           variant="plain"
           class="nav-link text-uppercase"
-          @click="emit('open-register')"
+          @click="emit('open-register', true)"
         >
           SignUp
         </v-btn>
         <v-btn
-          v-if="!userName"
+          v-if="!userName && !isMobile"
           variant="plain"
           class="nav-link text-uppercase"
-          @click="emit('open-login')"
+          @click="emit('open-login', true)"
         >
           Login
         </v-btn>
 
         <!-- Se o usuário ESTÁ autenticado -->
-        <v-menu v-if="userName">
+        <v-menu v-if="userName && !mobileMenuOpen && !isMobile">
           <template #activator="{ props }">
             <v-btn variant="plain" v-bind="props">
               <span style="color: #fff">
@@ -93,7 +69,15 @@
             <v-list-item @click="handleLogout"> Sair </v-list-item>
           </v-list>
         </v-menu>
-        >>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
+      </div>
+
+      <!-- Ícone hamburguer (visível apenas quando menu fechado) -->
+      <div v-if="!mobileMenuOpen && isMobile" class="d-flex d-md-none">
+        <div class="hamburger" @click="toggleMobileMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
 
@@ -119,28 +103,34 @@
             </router-link>
           </template>
 
+          <!-- Mostrar nome do usuário se autenticado -->
+          <div v-if="userName" class="mobile-link">Olá, {{ userName }}!</div>
+
+          <!-- Mostrar apenas o botão Sair se autenticado -->
           <v-btn
+            v-if="userName"
             class="mobile-link"
             variant="text"
-            @click="
-              () => {
-                closeMobileMenu();
-                dialogStore.openRegister();
-              }
-            "
+            @click="handleLogout"
+          >
+            Sair
+          </v-btn>
+
+          <!-- Se o usuário NÃO estiver autenticado, mostrar os botões SignUp e Login -->
+          <v-btn
+            v-if="!userName"
+            class="mobile-link"
+            variant="text"
+            @click="openRegisterMobile"
           >
             SignUp
           </v-btn>
 
           <v-btn
+            v-if="!userName"
             class="mobile-link"
             variant="text"
-            @click="
-              () => {
-                closeMobileMenu();
-                dialogStore.openLogin();
-              }
-            "
+            @click="openLoginMobile"
           >
             Login
           </v-btn>
@@ -151,14 +141,14 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
-import { ref } from "vue";
+import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 import { useDialogStore } from "@/stores/dialogStore";
-=======
-import { ref, onMounted } from "vue";
->>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
+import { useRouter } from "vue-router";
+
+const emit = defineEmits(["open-login", "open-register"]);
 
 const dialogStore = useDialogStore();
+const router = useRouter();
 
 const navItems = [
   {
@@ -170,8 +160,8 @@ const navItems = [
   { icon: "mdi-music", to: "/musics", label: "Músicas", tooltip: "Musics" },
 ];
 
-<<<<<<< HEAD
 const mobileMenuOpen = ref(false);
+const isMobile = ref(false);
 
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value;
@@ -179,26 +169,68 @@ function toggleMobileMenu() {
 
 function closeMobileMenu() {
   mobileMenuOpen.value = false;
-=======
-// Pegue o nome do usuário do localStorage
+}
+
 const userName = ref(null);
 
 onMounted(() => {
+  // Verifica se há um nome de usuário armazenado no localStorage
   userName.value = localStorage.getItem("userName") || null;
+
+  // Determina se é mobile
+  checkIfMobile();
+
+  // Adiciona evento de resize para garantir que isMobile seja atualizado
+  window.addEventListener("resize", checkIfMobile);
 });
 
-// Implementação do logout opcional
+// Função que verifica se a tela é mobile
+function checkIfMobile() {
+  isMobile.value = window.innerWidth <= 768; // ou qualquer outro limite que você queira para mobile
+}
+
+// Remove o evento de resize ao desmontar o componente
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", checkIfMobile);
+});
+
+// Adiciona um ouvinte para mudanças de tamanho da tela
+watch(
+  () => window.innerWidth,
+  () => checkIfMobile()
+);
+
+// Função para abrir o modal de login
+function openLoginModal() {
+  emit('open-login', true);
+}
+
+// Função para abrir o modal de registro
+function openRegisterModal() {
+  emit('open-register', true);
+}
+
+// Função para abrir o modal de login no menu mobile
+function openLoginMobile() {
+  emit('open-login', true);
+}
+
+// Função para abrir o modal de registro no menu mobile
+function openRegisterMobile() {
+  emit('open-register', true);
+}
+
+// Função para o logout
 function handleLogout() {
   localStorage.removeItem("userName");
+  localStorage.removeItem("token"); // Se você estiver utilizando token
 
-  // opcional: também o token
-  localStorage.removeItem("token");
-
-  // depois, dar um refresh ou um router.push
-  location.reload();
->>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
+  // Redireciona para a página de login após logout
+  router.push("/login");
 }
 </script>
+
+
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css?family=Work+Sans:400,600");
@@ -210,19 +242,11 @@ function handleLogout() {
 .custom-title {
   font-family: "Work Sans", sans-serif;
   font-weight: 800;
-<<<<<<< HEAD
   color: white;
 }
 
 .nav-link {
   color: white;
-=======
-  color: #fff;
-}
-
-.nav-link {
-  color: #fff;
->>>>>>> 225b44ebd62d5aae7a8e6bff4252c215c851448c
   font-size: 14px;
   position: relative;
   transition: color 0.2s ease-in-out;
@@ -305,53 +329,30 @@ function handleLogout() {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.95);
-  z-index: 999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #1e1e1e;
+  z-index: 1000;
+  padding-top: 60px;
+}
+
+.mobile-link {
+  display: block;
+  text-align: center;
+  padding: 15px;
+  font-size: 18px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.mobile-link:hover {
+  background-color: #333;
 }
 
 .menu-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  align-items: center;
-  font-family: "Work Sans", sans-serif;
-}
-
-.mobile-link {
-  color: white;
-  font-size: 20px;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: color 0.2s;
-}
-
-.mobile-link:hover {
-  color: #1db954;
-}
-
-/* -------------------------------
-   Transição Suave do Menu
-----------------------------------*/
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-slide-enter-from {
-  transform: translateY(-100%);
-  opacity: 0;
-}
-.fade-slide-enter-to {
-  transform: translateY(0);
-  opacity: 1;
-}
-.fade-slide-leave-to {
-  transform: translateY(-100%);
-  opacity: 0;
 }
 </style>
