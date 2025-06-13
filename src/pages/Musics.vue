@@ -293,6 +293,12 @@
         >
           <v-row align="center" class="w-100" no-gutters>
             <v-col cols="auto">
+              <v-btn
+                icon="mdi-close"
+                @click="stopMusic"
+                color="white"
+                variant="text"
+              ></v-btn>
               <v-avatar size="56">
                 <v-img :src="currentCover" />
               </v-avatar>
