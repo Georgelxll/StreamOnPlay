@@ -1,70 +1,37 @@
 <template>
   <v-app-bar flat height="70" class="navbar-black">
     <div class="d-flex align-center justify-space-between w-100 px-6">
-      <v-toolbar-title
-        class="text-h6 font-weight-bold custom-title d-flex align-center"
-      >
-        <router-link
-          to="/"
-          style="text-decoration: none; color: inherit"
-          class="d-flex align-center"
-        >
-          <img
-            src="@/assets/musica.png"
-            alt="Music Icon"
-            class="mr-2"
-            style="width: 50px; height: 50px"
-          />
+      <v-toolbar-title class="text-h6 font-weight-bold custom-title d-flex align-center">
+        <router-link to="/" style="text-decoration: none; color: inherit" class="d-flex align-center">
+          <img src="@/assets/musica.png" alt="Music Icon" class="mr-2" style="width: 50px; height: 50px" />
           StreamOn Play
         </router-link>
       </v-toolbar-title>
 
       <div class="d-flex align-center" style="gap: 20px">
         <template v-for="(item, index) in navItems" :key="index">
-          <v-btn
-            v-if="!isMobile"
-            :to="item.to"
-            variant="plain"
-            class="nav-link text-uppercase"
-          >
+          <v-btn v-if="!isMobile" :to="item.to" variant="plain" class="nav-link text-uppercase">
             <v-icon start>{{ item.icon }}</v-icon>
             {{ item.label }}
-            <v-tooltip
-              activator="parent"
-              location="bottom"
-              theme="dark"
-              color="#2a9db4"
-            >
+            <v-tooltip activator="parent" location="bottom" theme="dark" color="#2a9db4">
               {{ item.tooltip }}
             </v-tooltip>
           </v-btn>
         </template>
 
-        <!-- Botões de Login e SignUp (visíveis apenas se o usuário não estiver autenticado) -->
-        <v-btn
-          v-if="!userName && !isMobile"
-          variant="plain"
-          class="nav-link text-uppercase"
-          @click="emit('open-register', true)"
-        >
+        <v-btn v-if="!userName && !isMobile" variant="plain" class="nav-link text-uppercase"
+          @click="emit('open-register', true)">
           SignUp
         </v-btn>
-        <v-btn
-          v-if="!userName && !isMobile"
-          variant="plain"
-          class="nav-link text-uppercase"
-          @click="emit('open-login', true)"
-        >
+        <v-btn v-if="!userName && !isMobile" variant="plain" class="nav-link text-uppercase"
+          @click="emit('open-login', true)">
           Login
         </v-btn>
 
-        <!-- Se o usuário ESTÁ autenticado -->
         <v-menu v-if="userName && !mobileMenuOpen && !isMobile">
           <template #activator="{ props }">
             <v-btn variant="plain" v-bind="props">
-              <span style="color: #fff">
-                {{ userName }}
-              </span>
+              <span style="color: #fff">{{ userName }}</span>
               <v-icon icon="mdi-menu-down" color="#fff" />
             </v-btn>
           </template>
@@ -75,7 +42,7 @@
         </v-menu>
       </div>
 
-      <!-- Ícone hamburguer (visível apenas quando menu fechado) -->
+      <!-- Ícone hamburguer (visível apenas no mobile) -->
       <div v-if="!mobileMenuOpen && isMobile" class="d-flex d-md-none">
         <div class="hamburger" @click="toggleMobileMenu">
           <span></span>
@@ -85,7 +52,7 @@
       </div>
     </div>
 
-    <!-- Dropdown menu fullscreen -->
+    <!-- Dropdown menu fullscreen (MOBILE) -->
     <transition name="fade-slide">
       <div v-if="mobileMenuOpen" class="mobile-menu">
         <!-- Botão X -->
@@ -97,45 +64,23 @@
 
         <div class="menu-content">
           <template v-for="(item, index) in navItems" :key="index">
-            <router-link
-              :to="item.to"
-              class="mobile-link"
-              @click="closeMobileMenu"
-            >
+            <router-link :to="item.to" class="mobile-link" @click="closeMobileMenu">
               <v-icon class="mr-2">{{ item.icon }}</v-icon>
               {{ item.label }}
             </router-link>
           </template>
 
-          <!-- Mostrar nome do usuário se autenticado -->
           <div v-if="userName" class="mobile-link">Olá, {{ userName }}!</div>
 
-          <!-- Mostrar apenas o botão Sair se autenticado -->
-          <v-btn
-            v-if="userName"
-            class="mobile-link"
-            variant="text"
-            @click="handleLogout"
-          >
+          <v-btn v-if="userName" class="mobile-link" variant="text" @click="handleLogout">
             Sair
           </v-btn>
 
-          <!-- Se o usuário NÃO estiver autenticado, mostrar os botões SignUp e Login -->
-          <v-btn
-            v-if="!userName"
-            class="mobile-link"
-            variant="text"
-            @click="openRegisterMobile"
-          >
+          <v-btn v-if="!userName" class="mobile-link" variant="text" @click="openRegisterMobile">
             SignUp
           </v-btn>
 
-          <v-btn
-            v-if="!userName"
-            class="mobile-link"
-            variant="text"
-            @click="openLoginMobile"
-          >
+          <v-btn v-if="!userName" class="mobile-link" variant="text" @click="openLoginMobile">
             Login
           </v-btn>
         </div>
@@ -158,16 +103,20 @@ const navItems = [
   {
     icon: "mdi-robot",
     to: "/bot-discord",
-    label: "Bot",
+    label: "BOT",
     tooltip: "Bot Discord",
   },
-  { icon: "mdi-music", to: "/musics", label: "Músicas", tooltip: "Musics" },
+  {
+    icon: "mdi-music",
+    to: "/musics",
+    label: "MUSICS",
+    tooltip: "Musics",
+  },
 ];
 
 const mobileMenuOpen = ref(false);
 const isMobile = ref(false);
 
-// Use computed para reatividade
 const userName = computed(() => userStore.userName);
 
 function toggleMobileMenu() {
@@ -216,7 +165,10 @@ function handleLogout() {
 @import url("https://fonts.googleapis.com/css?family=Work+Sans:400,600");
 
 .navbar-black {
-  background-color: #000 !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .custom-title {
@@ -288,14 +240,15 @@ function handleLogout() {
 .close-x span:nth-child(1) {
   transform: translateY(10px) rotate(45deg);
 }
+
 .close-x span:nth-child(2) {
   opacity: 0;
 }
+
 .close-x span:nth-child(3) {
   transform: translateY(-10px) rotate(-45deg);
 }
 
-/* Posicionamento do X dentro do menu */
 .close-x {
   position: absolute;
   top: 24px;
@@ -309,30 +262,62 @@ function handleLogout() {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: #1e1e1e;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  /* MAIS ESCURO */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 1000;
-  padding-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
 }
 
-.mobile-link {
-  display: block;
-  text-align: center;
-  padding: 15px;
-  font-size: 18px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background-color 0.3s;
-}
-
-.mobile-link:hover {
-  background-color: #333;
-}
 
 .menu-content {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.mobile-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 15px;
+  font-size: 20px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  width: 100%;
+  max-width: 300px;
+  transition: background-color 0.3s;
+  border-radius: 8px;
+}
+
+.mobile-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* -------------------------------
+   Transição suave do menu mobile
+----------------------------------*/
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>
+
