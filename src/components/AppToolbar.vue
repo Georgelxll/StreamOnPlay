@@ -1,33 +1,102 @@
 <template>
   <v-app-bar flat height="70" class="navbar-black">
     <div class="d-flex align-center justify-space-between w-100 px-6">
-      <v-toolbar-title class="text-h6 font-weight-bold custom-title d-flex align-center">
-        <router-link to="/" style="text-decoration: none; color: inherit" class="d-flex align-center">
-          <img src="@/assets/musica.png" alt="Music Icon" class="mr-2" style="width: 50px; height: 50px" />
+      <!-- Logo -->
+      <v-toolbar-title
+        class="text-h6 font-weight-bold custom-title d-flex align-center"
+      >
+        <router-link
+          to="/"
+          style="text-decoration: none; color: inherit"
+          class="d-flex align-center"
+        >
+          <img
+            src="@/assets/musica.png"
+            alt="Music Icon"
+            class="mr-2"
+            style="width: 50px; height: 50px"
+          />
           StreamOn Play
         </router-link>
       </v-toolbar-title>
 
+      <!-- Navegação Desktop -->
       <div class="d-flex align-center" style="gap: 20px">
         <template v-for="(item, index) in navItems" :key="index">
-          <v-btn v-if="!isMobile" :to="item.to" variant="plain" class="nav-link text-uppercase">
+          <v-btn
+            v-if="!isMobile"
+            :to="item.to"
+            variant="plain"
+            class="nav-link text-uppercase"
+          >
             <v-icon start>{{ item.icon }}</v-icon>
             {{ item.label }}
-            <v-tooltip activator="parent" location="bottom" theme="dark" color="#2a9db4">
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              theme="dark"
+              color="#2a9db4"
+            >
               {{ item.tooltip }}
             </v-tooltip>
           </v-btn>
         </template>
 
-        <v-btn v-if="!userName && !isMobile" variant="plain" class="nav-link text-uppercase"
-          @click="emit('open-register', true)">
+        <v-btn
+          v-if="!userName && !isMobile"
+          variant="plain"
+          class="nav-link text-uppercase"
+          @click="emit('open-register', true)"
+        >
           SignUp
         </v-btn>
-        <v-btn v-if="!userName && !isMobile" variant="plain" class="nav-link text-uppercase"
-          @click="emit('open-login', true)">
+        <v-btn
+          v-if="!userName && !isMobile"
+          variant="plain"
+          class="nav-link text-uppercase"
+          @click="emit('open-login', true)"
+        >
           Login
         </v-btn>
 
+        <!-- Dropdown de idiomas -->
+        <v-menu v-if="!isMobile">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              variant="plain"
+              class="nav-link d-flex align-center"
+              style="gap: 8px"
+            >
+              <img
+                :src="selectedLanguage.flag"
+                alt="flag"
+                style="height: 20px; border-radius: 2px"
+              />
+
+              <v-icon end icon="mdi-menu-down" />
+            </v-btn>
+          </template>
+          <v-list class="language-dropdown">
+            <v-list-item
+              v-for="(lang, index) in languages"
+              :key="index"
+              @click="selectLanguage(lang)"
+              class="language-item"
+            >
+              <v-list-item-title class="d-flex align-center" style="gap: 10px">
+                <img
+                  :src="lang.flag"
+                  alt="flag"
+                  style="width: 24px; height: 18px; border-radius: 2px"
+                />
+                {{ lang.label }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- Menu do usuário -->
         <v-menu v-if="userName && !mobileMenuOpen && !isMobile">
           <template #activator="{ props }">
             <v-btn variant="plain" v-bind="props">
@@ -35,14 +104,13 @@
               <v-icon icon="mdi-menu-down" color="#fff" />
             </v-btn>
           </template>
-
           <v-list>
             <v-list-item @click="handleLogout"> Sair </v-list-item>
           </v-list>
         </v-menu>
       </div>
 
-      <!-- Ícone hamburguer (visível apenas no mobile) -->
+      <!-- Ícone hamburguer (mobile) -->
       <div v-if="!mobileMenuOpen && isMobile" class="d-flex d-md-none">
         <div class="hamburger" @click="toggleMobileMenu">
           <span></span>
@@ -52,10 +120,9 @@
       </div>
     </div>
 
-    <!-- Dropdown menu fullscreen (MOBILE) -->
+    <!-- Menu mobile fullscreen -->
     <transition name="fade-slide">
       <div v-if="mobileMenuOpen" class="mobile-menu">
-        <!-- Botão X -->
         <div class="hamburger close-x" @click="toggleMobileMenu">
           <span></span>
           <span></span>
@@ -64,7 +131,11 @@
 
         <div class="menu-content">
           <template v-for="(item, index) in navItems" :key="index">
-            <router-link :to="item.to" class="mobile-link" @click="closeMobileMenu">
+            <router-link
+              :to="item.to"
+              class="mobile-link"
+              @click="closeMobileMenu"
+            >
               <v-icon class="mr-2">{{ item.icon }}</v-icon>
               {{ item.label }}
             </router-link>
@@ -72,15 +143,30 @@
 
           <div v-if="userName" class="mobile-link">Olá, {{ userName }}!</div>
 
-          <v-btn v-if="userName" class="mobile-link" variant="text" @click="handleLogout">
+          <v-btn
+            v-if="userName"
+            class="mobile-link"
+            variant="text"
+            @click="handleLogout"
+          >
             Sair
           </v-btn>
 
-          <v-btn v-if="!userName" class="mobile-link" variant="text" @click="openRegisterMobile">
+          <v-btn
+            v-if="!userName"
+            class="mobile-link"
+            variant="text"
+            @click="openRegisterMobile"
+          >
             SignUp
           </v-btn>
 
-          <v-btn v-if="!userName" class="mobile-link" variant="text" @click="openLoginMobile">
+          <v-btn
+            v-if="!userName"
+            class="mobile-link"
+            variant="text"
+            @click="openLoginMobile"
+          >
             Login
           </v-btn>
         </div>
@@ -106,18 +192,22 @@ const navItems = [
     label: "BOT",
     tooltip: "Bot Discord",
   },
-  {
-    icon: "mdi-music",
-    to: "/musics",
-    label: "MUSICS",
-    tooltip: "Musics",
-  },
+  { icon: "mdi-music", to: "/musics", label: "MUSICS", tooltip: "Musics" },
 ];
 
 const mobileMenuOpen = ref(false);
 const isMobile = ref(false);
-
 const userName = computed(() => userStore.userName);
+
+// Bandeiras reais (links CDN ou locais)
+const languages = [
+  { code: "en", label: "English", flag: "https://flagcdn.com/h40/us.png" },
+  { code: "pt", label: "Português", flag: "https://flagcdn.com/h40/br.png" },
+  { code: "es", label: "Español", flag: "https://flagcdn.com/h40/es.png" },
+  { code: "fr", label: "Français", flag: "https://flagcdn.com/h40/fr.png" },
+];
+
+const selectedLanguage = ref(languages[0]);
 
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value;
@@ -127,14 +217,14 @@ function closeMobileMenu() {
   mobileMenuOpen.value = false;
 }
 
+function checkIfMobile() {
+  isMobile.value = window.innerWidth <= 768;
+}
+
 onMounted(() => {
   checkIfMobile();
   window.addEventListener("resize", checkIfMobile);
 });
-
-function checkIfMobile() {
-  isMobile.value = window.innerWidth <= 768;
-}
 
 function openLoginModal() {
   emit("open-login");
@@ -158,6 +248,10 @@ function handleLogout() {
   userStore.clearUser();
   mobileMenuOpen.value = false;
   router.push("/");
+}
+
+function selectLanguage(lang) {
+  selectedLanguage.value = lang;
 }
 </script>
 
@@ -215,9 +309,7 @@ function handleLogout() {
   flex-direction: column;
 }
 
-/* -------------------------------
-   Estilo do Hamburguer
-----------------------------------*/
+/* Hamburguer */
 .hamburger {
   width: 30px;
   height: 24px;
@@ -228,36 +320,28 @@ function handleLogout() {
   justify-content: space-between;
   z-index: 1001;
 }
-
 .hamburger span {
   background: white;
   height: 3px;
   border-radius: 2px;
   transition: all 0.3s ease;
 }
-
-/* Botão X */
 .close-x span:nth-child(1) {
   transform: translateY(10px) rotate(45deg);
 }
-
 .close-x span:nth-child(2) {
   opacity: 0;
 }
-
 .close-x span:nth-child(3) {
   transform: translateY(-10px) rotate(-45deg);
 }
-
 .close-x {
   position: absolute;
   top: 24px;
   right: 24px;
 }
 
-/* -------------------------------
-   Menu Mobile Fullscreen
-----------------------------------*/
+/* Mobile Menu */
 .mobile-menu {
   position: fixed;
   top: 0;
@@ -265,7 +349,6 @@ function handleLogout() {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.85);
-  /* MAIS ESCURO */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 1000;
@@ -275,8 +358,6 @@ function handleLogout() {
   justify-content: center;
   overflow-y: auto;
 }
-
-
 .menu-content {
   display: flex;
   flex-direction: column;
@@ -285,7 +366,6 @@ function handleLogout() {
   width: 100%;
   max-width: 500px;
 }
-
 .mobile-link {
   display: flex;
   align-items: center;
@@ -301,23 +381,40 @@ function handleLogout() {
   transition: background-color 0.3s;
   border-radius: 8px;
 }
-
 .mobile-link:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* -------------------------------
-   Transição suave do menu mobile
-----------------------------------*/
+/* Transição */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: all 0.3s ease;
 }
-
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-20px);
 }
-</style>
 
+/* Dropdown Idioma */
+.language-dropdown {
+  background-color: #000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.language-item {
+  color: white;
+  transition: background-color 0.2s;
+}
+.language-item:hover {
+  background-color: #1db954 !important;
+  color: black !important;
+}
+.language-dropdown {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+}
+
+.language-item:hover {
+  background-color: rgba(29, 185, 84, 0.2);
+}
+</style>
