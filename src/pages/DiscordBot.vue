@@ -50,13 +50,13 @@
       <v-container class="py-12">
         <h1 class="bot-title">StremWave</h1>
         <p class="bot-description">
-          O bot definitivo para transformar seu servidor com música, moderação e
-          diversão.
+          The ultimate bot to transform your server with music, moderation and
+          fun.
         </p>
 
         <div class="cta-wrapper mt-6 mb-12">
           <v-btn color="green-accent-4" class="cta-button" size="large">
-            Adicionar ao Discord
+            Add to Discord
           </v-btn>
         </div>
 
@@ -65,10 +65,10 @@
             <v-card class="feature-card" elevation="4" rounded>
               <v-card-text class="text-center">
                 <v-icon size="36" color="green-accent-4">mdi-music</v-icon>
-                <h3 class="feature-title">Comandos de Música</h3>
+                <h3 class="feature-title">Music Commands</h3>
                 <p class="feature-description">
-                  Toque músicas direto do YouTube e Spotify com qualidade
-                  premium.
+                  Play music directly from YouTube and Spotify in premium
+                  quality.
                 </p>
               </v-card-text>
             </v-card>
@@ -79,9 +79,9 @@
                 <v-icon size="36" color="green-accent-4"
                   >mdi-shield-check</v-icon
                 >
-                <h3 class="feature-title">Moderação Automática</h3>
+                <h3 class="feature-title">Automatic Moderation</h3>
                 <p class="feature-description">
-                  Banimentos, filtros e proteções em tempo real contra spam e
+                  Real-time bans, filters, and protections against spam and
                   trolls.
                 </p>
               </v-card-text>
@@ -93,9 +93,9 @@
                 <v-icon size="36" color="green-accent-4"
                   >mdi-controller-classic</v-icon
                 >
-                <h3 class="feature-title">Jogos e Diversão</h3>
+                <h3 class="feature-title">Games and Fun</h3>
                 <p class="feature-description">
-                  Mini-games, quizzes e interações para animar seu servidor.
+                  Mini-games, quizzes and interactions to liven up your server.
                 </p>
               </v-card-text>
             </v-card>

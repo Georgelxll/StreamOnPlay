@@ -8,10 +8,10 @@
           <v-row class="fill-height" align="center" justify="center">
             <v-col class="text-center">
               <h1 class="display-2 font-weight-bold text-green">
-                Descubra o StreamOn Play
+                Discover StreamOn Play
               </h1>
               <p class="text-white text-h6 mt-4">
-                Sua jornada musical começa aqui
+                Your musical journey starts here
               </p>
               <v-btn
                 @click="emit('open-signup-modal')"
@@ -19,7 +19,7 @@
                 dark
                 large
               >
-                Começar Agora
+                Start Now
               </v-btn>
             </v-col>
           </v-row>
@@ -48,7 +48,7 @@
                   <v-card-text>{{ dev.bio }}</v-card-text>
                   <v-card-actions>
                     <v-btn :href="dev.url" target="_blank" color="green" text>
-                      Ver no GitHub
+                      View on GitHub
                     </v-btn>
                   </v-card-actions>
                 </v-card>
@@ -85,20 +85,20 @@ import { ref } from "vue";
 const devCards = [
   {
     name: "George",
-    bio: "Especialista em BackEnd e entusiasta de design limpo.",
+    bio: "BackEnd specialist and clean design enthusiast.",
     avatar: "https://avatars.githubusercontent.com/u/166880649?v=4",
     url: "https://github.com/Georgelxll",
   },
   {
     name: "Luiz Pedro",
-    bio: "Entusiasta de Front-End e defensor da experiência fluida.",
+    bio: "Front-End enthusiast and advocate of fluid experience.",
     avatar:
       "https://avatars.githubusercontent.com/u/74275864?s=400&u=08af40a2efb1e6e44910a904222cf90a53262866&v=4",
     url: "https://github.com/luuizpeedro",
   },
   {
     name: "Lucas Silva",
-    bio: "Dev de APIs e bots para Discord, sempre em busca de automação inteligente.",
+    bio: "API and bot dev for Discord, always looking for intelligent automation.",
     avatar:
       "https://media-gru1-1.cdn.whatsapp.net/v/t61.24694-24/491887537_964379899197293_6717416557819175312_n.jpg?ccb=11-4&oh=01_Q5Aa1wFL2yWq7p3xGLAeknN45Nz6aqAHbsmQARq4tR8bjlAw3Q&oe=685929C5&_nc_sid=5e03e0&_nc_cat=107",
     url: "https://github.com/lucas-ssilva2706",

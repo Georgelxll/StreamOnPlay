@@ -4,7 +4,7 @@
     <v-main class="music-app">
       <v-container class="py-10">
         <!-- Título -->
-        <h1 class="title">Minhas Músicas</h1>
+        <h1 class="title">My Songs</h1>
 
         <!-- Campo de busca -->
         <v-text-field
@@ -47,9 +47,7 @@
         </div>
         <div v-else class="text-center mt-10 not-found-msg">
           <v-icon size="40" color="grey">mdi-magnify-close</v-icon>
-          <p class="text-grey text-subtitle-1 mt-2">
-            Nenhuma música encontrada
-          </p>
+          <p class="text-grey text-subtitle-1 mt-2">No songs found</p>
         </div>
       </v-container>
 
@@ -67,7 +65,7 @@
       <v-dialog v-model="openAddMusic" max-width="500px" persistent>
         <v-card class="add-music-modal">
           <v-card-title>
-            <span class="text-h6">Adicionar Nova Música</span>
+            <span class="text-h6">Add New Music</span>
           </v-card-title>
           <v-card-text>
             <v-text-field
@@ -80,8 +78,8 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn text @click="openAddMusic = false">Cancelar</v-btn>
-            <v-btn color="green-accent-4" @click="saveSong">Salvar</v-btn>
+            <v-btn text @click="openAddMusic = false">Cancel</v-btn>
+            <v-btn color="green-accent-4" @click="saveSong">Save</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
