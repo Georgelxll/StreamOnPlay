@@ -109,37 +109,52 @@ app.post("/api/Login", async (req, res) => {
 // Adicionar nova música (protected)
 app.post("/api/songs", autenticarJWT, async (req, res) => {
   const { url } = req.body;
+  console.log("URL recebida:", url); // Log adicional
 
   if (!url) {
     return res.status(400).json({ error: "Informe o link do YouTube" });
   }
 
   try {
-    // Pegue o nome, artista e capa automaticamente do vídeo
-    const cleaned = url.split("?")[0];
+    // Limpa a URL removendo parâmetros desnecessários
+    const cleaned = url.split('&')[0]; // Pega apenas até o primeiro &
+    console.log("URL limpa:", cleaned); // Log da URL processada
+
     const info = await ytdl.getInfo(cleaned);
+    console.log("Info do vídeo:", { // Log das informações
+      title: info.videoDetails.title,
+      artist: info.videoDetails.author.name,
+      thumbnails: info.videoDetails.thumbnails.length
+    });
 
-    if (!info) return res.status(404).json({ error: "Vídeo não encontrado" });
-
-    // Extraindo o nome, artista (se possuir) e a capa
     const title = info.videoDetails.title;
     const artist = info.videoDetails.author.name;
+    const cover = info.videoDetails.thumbnails[0]?.url || '';
 
-    const cover =
-      info.videoDetails.thumbnails.length > 0
-        ? info.videoDetails.thumbnails[0].url
-        : "";
+    // Log antes da inserção no banco
+    console.log("Inserindo no banco:", { 
+      user_id: req.user.id,
+      title,
+      artist,
+      cover,
+      url: cleaned
+    });
 
-    // grava no banco junto com o usuário que é o dono
-    await pool.query(
-      "INSERT INTO songs (user_id, title, artist, cover, url) VALUES ($1,$2,$3,$4,$5)",
+    const result = await pool.query(
+      "INSERT INTO songs (user_id, title, artist, cover, url) VALUES ($1,$2,$3,$4,$5) RETURNING *",
       [req.user.id, title, artist, cover, cleaned]
     );
+    
+    console.log("Inserção bem-sucedida:", result.rows[0]);
+    res.json({ message: "Música criada!", ...result.rows[0] });
 
-    res.json({ message: "Música criada!", title, artist, cover });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao processar" });
+    console.error("ERRO COMPLETO:", err); // Log detalhado
+    res.status(500).json({ 
+      error: "Erro ao processar",
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 

@@ -117,6 +117,7 @@ const email = ref("");
 const password = ref("");
 const isLogin = ref(false);
 const showLoginDialog = ref(true);
+const emit = defineEmits(['openSignupModal']);
 
 async function login() {
   if (!email.value || !password.value) return;
@@ -137,6 +138,7 @@ async function login() {
     const result = await response.json();
 
     token.value = result.token;
+    localStorage.setItem("token", result.token); // salva o token
     isLogin.value = true;
 
     showLoginDialog.value = false;
@@ -150,6 +152,12 @@ async function login() {
 
     console.error(err);
   }
+}
+
+token.value = localStorage.getItem("token");
+if (token.value) {
+  isLogin.value = true;
+  fetchPrivateSongs();
 }
 
 async function fetchPrivateSongs() {
@@ -197,19 +205,15 @@ const newSong = ref({ url: "" });
 
 async function saveSong() {
   const { url } = newSong.value;
+  console.log("Tentando salvar:", url); // Log adicional
 
   if (!url) {
     showSnackbar("Informe uma URL!", "red");
-
     return;
   }
 
   if (!token.value) {
-    showSnackbar(
-      "Você precisa estar autenticado para acrescentar uma música.",
-      "red"
-    );
-
+    showSnackbar("Autenticação necessária", "red");
     return;
   }
 
@@ -218,37 +222,34 @@ async function saveSong() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token.value}`,
+        "Authorization": `Bearer ${token.value}`
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url })
     });
 
-    if (response.ok) {
-      const newStored = await response.json();
+    const data = await response.json();
+    console.log("Resposta do servidor:", data); // Log da resposta
 
-      // acrescenta na lista junto às já presentes
-      songs.value.unshift({
-        id: Date.now(),
-        title: newStored.title,
-        artist: newStored.artist,
-        cover: newStored.cover,
-        url,
-      });
-
-      newSong.value = { url: "" };
-      openAddMusic.value = false;
-
-      showSnackbar("Música adicionada!", "green");
-    } else {
-      const error = await response.json();
-      showSnackbar(error.error ?? "Erro ao acrescentar música.", "red");
-
-      console.error(await response.text());
+    if (!response.ok) {
+      throw new Error(data.error || `Erro ${response.status}`);
     }
-  } catch (err) {
-    showSnackbar(err.message, "red");
 
-    console.error(err);
+    // Atualização otimizada da lista
+    songs.value = [{ 
+      id: data.id || Date.now(),
+      title: data.title,
+      artist: data.artist,
+      cover: data.cover,
+      url: data.url || url
+    }, ...songs.value];
+
+    newSong.value = { url: "" };
+    openAddMusic.value = false;
+    showSnackbar("Música adicionada!", "green");
+
+  } catch (err) {
+    console.error("Erro completo:", err); // Log detalhado
+    showSnackbar(err.details || err.message || "Erro desconhecido", "red");
   }
 }
 
