@@ -105,7 +105,7 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item @click="userProfile"> Profile </v-list-item> 
+            <v-list-item @click="goToProfile"> Profile </v-list-item> 
             <v-list-item @click="handleLogout"> Logout </v-list-item>
           </v-list>
         </v-menu>
@@ -255,8 +255,8 @@ function selectLanguage(lang) {
   selectedLanguage.value = lang;
 }
 
-function userProfile() {
-  router.push("/profile");
+function goToProfile(userId) {
+  router.push(`/profile/${userId}`);
 }
 
 </script>

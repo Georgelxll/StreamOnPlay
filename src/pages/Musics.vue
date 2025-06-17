@@ -4,7 +4,7 @@
     <v-main class="music-app">
       <v-container class="py-10">
         <!-- Título -->
-        <h1 class="title">My Songs</h1>
+        <h1 class="title">Musics</h1>
 
         <!-- Campo de busca -->
         <v-text-field
@@ -62,7 +62,11 @@
                   >
                     <v-card-text class="flip-back-text">
                       <div class="user-info">
-                        <div class="user-avatar">
+                        <div 
+                        class="user-avatar"
+                        @click.stop="goToProfile(song.user_id)"
+                        style="cursor: pointer;"
+                        >
                           <v-icon size="32">mdi-account-circle</v-icon>
                         </div>
                         <div class="user-name">
@@ -132,6 +136,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const search = ref("");
 
@@ -334,6 +341,10 @@ async function saveSong() {
     console.error("Erro completo:", err); // Log detalhado
     showSnackbar(err.details || err.message || "Erro desconhecido", "red");
   }
+}
+
+function goToProfile(userId) {
+  router.push(`/profile/${userId}`);
 }
 
 // Snackbar

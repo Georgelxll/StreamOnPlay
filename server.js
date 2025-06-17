@@ -173,6 +173,27 @@ app.get("/api/songs/public", async (req, res) => {
   }
 });
 
+app.get("/api/users/:id/songs", async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const result = await pool.query(
+      `SELECT songs.*, users.name AS user_name
+       FROM songs
+       JOIN users ON songs.user_id = users.id
+       WHERE songs.user_id=$1
+       ORDER BY songs.id DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Erro ao obter músicas do usuário:", err);
+    res.status(500).json({ error: "Erro ao obter músicas do usuário" });
+  }
+});
+
+
 // Executar o servidor
 app.listen(port, () => {
   console.log(`Server iniciado na porta ${port}. http://localhost:${port}`);
