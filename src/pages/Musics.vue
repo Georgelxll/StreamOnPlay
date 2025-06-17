@@ -29,20 +29,14 @@
               md="4"
               lg="3"
             >
-              <div class="flip-card">
+              <div class="flip-card" @click="toggleFlip(song.id)">
                 <div
                   class="flip-card-inner"
-                  :class="{ flipped: hoveringImageMap[song.id] }"
+                  :class="{ flipped: flippedCardMap[song.id] }"
                 >
                   <!-- Frente do card -->
                   <v-card class="music-card" rounded="lg" elevation="4">
-                    <v-img
-                      :src="song.cover"
-                      cover
-                      class="music-img"
-                      @mouseenter="setHover(song.id, true)"
-                      @mouseleave="setHover(song.id, false)"
-                    />
+                    <v-img :src="song.cover" cover class="music-img" />
 
                     <v-card-text>
                       <div class="song-title">{{ song.title }}</div>
@@ -144,7 +138,14 @@ const search = ref("");
 const songs = ref([]);
 
 // Estado hover separado para cada música, armazenado num objeto id => boolean
-const hoveringImageMap = ref({});
+const flippedCardMap = ref({});
+
+function toggleFlip(id) {
+  flippedCardMap.value = {
+    ...flippedCardMap.value,
+    [id]: !flippedCardMap.value[id],
+  };
+}
 
 const filteredSongs = computed(() => {
   return songs.value.filter(
