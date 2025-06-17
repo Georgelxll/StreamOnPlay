@@ -116,40 +116,30 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
   }
 
   try {
-    // Limpa a URL removendo parâmetros desnecessários
-    const cleaned = url.split("&")[0]; // Pega apenas até o primeiro &
-    console.log("URL limpa:", cleaned); // Log da URL processada
+    const cleaned = url.split("&")[0];
 
     const info = await ytdl.getInfo(cleaned);
-    console.log("Info do vídeo:", {
-      // Log das informações
-      title: info.videoDetails.title,
-      artist: info.videoDetails.author.name,
-      thumbnails: info.videoDetails.thumbnails.length,
-    });
-
     const title = info.videoDetails.title;
     const artist = info.videoDetails.author.name;
     const cover = info.videoDetails.thumbnails[0]?.url || "";
 
-    // Log antes da inserção no banco
-    console.log("Inserindo no banco:", {
-      user_id: req.user.id,
-      title,
-      artist,
-      cover,
-      url: cleaned,
-    });
+    // Verifica se a música já existe
+    const consult = await pool.query(
+      "SELECT title FROM songs WHERE title = $1 AND user_id = $2",
+      [title, req.user.id]
+    );
+
+    if (consult.rows.length > 0) {
+      return res.status(400).json({ error: "Música já adicionada." });
+    }
 
     const result = await pool.query(
-      "INSERT INTO songs (user_id, title, artist, cover, url) VALUES ($1,$2,$3,$4,$5) RETURNING *",
+      "INSERT INTO songs (user_id, title, artist, cover, url) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       [req.user.id, title, artist, cover, cleaned]
     );
 
-    console.log("Inserção bem-sucedida:", result.rows[0]);
     res.json({ message: "Música criada!", ...result.rows[0] });
   } catch (err) {
-    console.error("ERRO COMPLETO:", err); // Log detalhado
     res.status(500).json({
       error: "Erro ao processar",
       details: err.message,
