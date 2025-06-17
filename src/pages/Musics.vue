@@ -30,17 +30,31 @@
               lg="3"
             >
               <div class="flip-card">
-                <div class="flip-card-inner">
+                <div
+                  class="flip-card-inner"
+                  :class="{ flipped: hoveringImageMap[song.id] }"
+                >
                   <!-- Frente do card -->
                   <v-card class="music-card" rounded="lg" elevation="4">
-                    <v-img :src="song.cover" cover class="music-img" />
+                    <v-img
+                      :src="song.cover"
+                      cover
+                      class="music-img"
+                      @mouseenter="setHover(song.id, true)"
+                      @mouseleave="setHover(song.id, false)"
+                    />
 
                     <v-card-text>
                       <div class="song-title">{{ song.title }}</div>
                       <div class="song-artist">{{ song.artist }}</div>
                     </v-card-text>
                     <v-card-actions class="justify-end">
-                      <v-btn icon size="small" color="green-accent-4">
+                      <v-btn
+                        icon
+                        size="small"
+                        color="green-accent-4"
+                        @click.stop="playSong(song)"
+                      >
                         <v-icon>mdi-play-circle</v-icon>
                       </v-btn>
                     </v-card-actions>
@@ -129,6 +143,9 @@ const search = ref("");
 
 const songs = ref([]);
 
+// Estado hover separado para cada música, armazenado num objeto id => boolean
+const hoveringImageMap = ref({});
+
 const filteredSongs = computed(() => {
   return songs.value.filter(
     (song) =>
@@ -137,7 +154,19 @@ const filteredSongs = computed(() => {
   );
 });
 
-// Autenticação
+// Função para setar hover no mapa
+function setHover(id, val) {
+  hoveringImageMap.value = { ...hoveringImageMap.value, [id]: val };
+}
+
+// Função de exemplo para tocar música
+function playSong(song) {
+  console.log("Tocando música:", song.title);
+  // aqui você coloca a lógica real para tocar música
+}
+
+// Autenticação e resto do código permanece igual (não alterei)
+
 const token = ref(null);
 const email = ref("");
 const password = ref("");
@@ -354,6 +383,7 @@ onMounted(fetchPublicSongs);
   transition: 0.3s ease;
   border: 1px solid transparent;
   overflow: hidden;
+  position: relative;
 }
 
 .music-card:hover {
@@ -404,6 +434,7 @@ onMounted(fetchPublicSongs);
 }
 .flip-card {
   perspective: 1000px;
+  position: relative;
 }
 
 .flip-card-inner {
@@ -414,7 +445,15 @@ onMounted(fetchPublicSongs);
   transform-style: preserve-3d;
 }
 
+/* Remove o hover antigo */
+/*
 .flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+*/
+
+/* Nova classe para flip */
+.flip-card-inner.flipped {
   transform: rotateY(180deg);
 }
 
