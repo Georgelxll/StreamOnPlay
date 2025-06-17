@@ -109,7 +109,6 @@ app.post("/api/Login", async (req, res) => {
 // Adicionar nova música (protected)
 app.post("/api/songs", autenticarJWT, async (req, res) => {
   const { url } = req.body;
-  console.log("URL recebida:", url); // Log adicional
 
   if (!url) {
     return res.status(400).json({ error: "Informe o link do YouTube" });

@@ -105,7 +105,8 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item @click="handleLogout"> Sair </v-list-item>
+            <v-list-item @click="userProfile"> Profile </v-list-item> 
+            <v-list-item @click="handleLogout"> Logout </v-list-item>
           </v-list>
         </v-menu>
       </div>
@@ -142,7 +143,7 @@
           </template>
 
           <div v-if="userName" class="mobile-link">Olá, {{ userName }}!</div>
-
+          
           <v-btn
             v-if="userName"
             class="mobile-link"
@@ -253,6 +254,11 @@ function handleLogout() {
 function selectLanguage(lang) {
   selectedLanguage.value = lang;
 }
+
+function userProfile() {
+  router.push("/profile");
+}
+
 </script>
 
 <style scoped>

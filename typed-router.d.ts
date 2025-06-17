@@ -22,5 +22,6 @@ declare module 'vue-router/auto-routes' {
     '/DiscordBot': RouteRecordInfo<'/DiscordBot', '/DiscordBot', Record<never, never>, Record<never, never>>,
     '/Musics': RouteRecordInfo<'/Musics', '/Musics', Record<never, never>, Record<never, never>>,
     '/NotFound': RouteRecordInfo<'/NotFound', '/NotFound', Record<never, never>, Record<never, never>>,
+    '/UserProfile': RouteRecordInfo<'/UserProfile', '/UserProfile', Record<never, never>, Record<never, never>>,
   }
 }
