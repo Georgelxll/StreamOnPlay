@@ -117,43 +117,43 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
 
   try {
     // Limpa a URL removendo parâmetros desnecessários
-    const cleaned = url.split('&')[0]; // Pega apenas até o primeiro &
+    const cleaned = url.split("&")[0]; // Pega apenas até o primeiro &
     console.log("URL limpa:", cleaned); // Log da URL processada
 
     const info = await ytdl.getInfo(cleaned);
-    console.log("Info do vídeo:", { // Log das informações
+    console.log("Info do vídeo:", {
+      // Log das informações
       title: info.videoDetails.title,
       artist: info.videoDetails.author.name,
-      thumbnails: info.videoDetails.thumbnails.length
+      thumbnails: info.videoDetails.thumbnails.length,
     });
 
     const title = info.videoDetails.title;
     const artist = info.videoDetails.author.name;
-    const cover = info.videoDetails.thumbnails[0]?.url || '';
+    const cover = info.videoDetails.thumbnails[0]?.url || "";
 
     // Log antes da inserção no banco
-    console.log("Inserindo no banco:", { 
+    console.log("Inserindo no banco:", {
       user_id: req.user.id,
       title,
       artist,
       cover,
-      url: cleaned
+      url: cleaned,
     });
 
     const result = await pool.query(
       "INSERT INTO songs (user_id, title, artist, cover, url) VALUES ($1,$2,$3,$4,$5) RETURNING *",
       [req.user.id, title, artist, cover, cleaned]
     );
-    
+
     console.log("Inserção bem-sucedida:", result.rows[0]);
     res.json({ message: "Música criada!", ...result.rows[0] });
-
   } catch (err) {
     console.error("ERRO COMPLETO:", err); // Log detalhado
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Erro ao processar",
       details: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
   }
 });
@@ -187,4 +187,15 @@ app.get("/api/songs/public", async (req, res) => {
 // Executar o servidor
 app.listen(port, () => {
   console.log(`Server iniciado na porta ${port}. http://localhost:${port}`);
+});
+
+// Lista todos os usuários (endpoint necessário para o frontend)
+app.get("/api/users", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, name FROM users");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Erro ao buscar usuários:", err);
+    res.status(500).json({ error: "Erro ao buscar usuários" });
+  }
 });

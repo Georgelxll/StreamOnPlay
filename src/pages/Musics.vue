@@ -29,19 +29,45 @@
               md="4"
               lg="3"
             >
-              <v-card class="music-card" rounded="lg" elevation="4">
-                <v-img :src="song.cover" cover class="music-img" />
+              <div class="flip-card">
+                <div class="flip-card-inner">
+                  <!-- Frente do card -->
+                  <v-card class="music-card" rounded="lg" elevation="4">
+                    <v-img :src="song.cover" cover class="music-img" />
 
-                <v-card-text>
-                  <div class="song-title">{{ song.title }}</div>
-                  <div class="song-artist">{{ song.artist }}</div>
-                </v-card-text>
-                <v-card-actions class="justify-end">
-                  <v-btn icon size="small" color="green-accent-4">
-                    <v-icon>mdi-play-circle</v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
+                    <v-card-text>
+                      <div class="song-title">{{ song.title }}</div>
+                      <div class="song-artist">{{ song.artist }}</div>
+                    </v-card-text>
+                    <v-card-actions class="justify-end">
+                      <v-btn icon size="small" color="green-accent-4">
+                        <v-icon>mdi-play-circle</v-icon>
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+
+                  <!-- Verso do card -->
+                  <v-card
+                    class="music-card back-face"
+                    rounded="lg"
+                    elevation="4"
+                  >
+                    <v-card-text class="flip-back-text">
+                      <div class="user-info">
+                        <div class="user-avatar">
+                          <v-icon size="32">mdi-account-circle</v-icon>
+                        </div>
+                        <div class="user-name">
+                          Adicionado por:
+                          <strong>{{
+                            usersMap[song.user_id] || "Desconhecido"
+                          }}</strong>
+                        </div>
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </div>
@@ -117,7 +143,32 @@ const email = ref("");
 const password = ref("");
 const isLogin = ref(false);
 const showLoginDialog = ref(true);
-const emit = defineEmits(['openSignupModal']);
+const emit = defineEmits(["openSignupModal"]);
+const usersMap = ref({}); // ID → Nome
+
+async function fetchUsers() {
+  try {
+    const response = await fetch("http://localhost:3001/api/users");
+    if (!response.ok) throw new Error("Erro ao buscar usuários");
+
+    const users = await response.json();
+
+    const map = {};
+    users.forEach((user) => {
+      map[user.id] = user.name;
+    });
+
+    usersMap.value = map;
+  } catch (err) {
+    console.error("Erro ao buscar usuários:", err);
+    showSnackbar("Erro ao buscar usuários", "red");
+  }
+}
+
+onMounted(async () => {
+  await fetchUsers();
+  await fetchPublicSongs(); // ou fetchPrivateSongs()
+});
 
 async function login() {
   if (!email.value || !password.value) return;
@@ -222,9 +273,9 @@ async function saveSong() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token.value}`
+        Authorization: `Bearer ${token.value}`,
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }),
     });
 
     const data = await response.json();
@@ -235,18 +286,20 @@ async function saveSong() {
     }
 
     // Atualização otimizada da lista
-    songs.value = [{ 
-      id: data.id || Date.now(),
-      title: data.title,
-      artist: data.artist,
-      cover: data.cover,
-      url: data.url || url
-    }, ...songs.value];
+    songs.value = [
+      {
+        id: data.id || Date.now(),
+        title: data.title,
+        artist: data.artist,
+        cover: data.cover,
+        url: data.url || url,
+      },
+      ...songs.value,
+    ];
 
     newSong.value = { url: "" };
     openAddMusic.value = false;
     showSnackbar("Música adicionada!", "green");
-
   } catch (err) {
     console.error("Erro completo:", err); // Log detalhado
     showSnackbar(err.details || err.message || "Erro desconhecido", "red");
@@ -348,5 +401,76 @@ onMounted(fetchPublicSongs);
 
 .not-found-msg {
   color: #aaa;
+}
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.music-card {
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background-color: #1e1e1e;
+  transition: 0.3s ease;
+  border: 1px solid transparent;
+  overflow: hidden;
+}
+
+.music-card:hover {
+  border-color: #1db954;
+  box-shadow: 0 0 15px #1db95450;
+}
+
+.back-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden;
+  transform: rotateY(180deg);
+  background-color: #1e1e1e;
+}
+
+.flip-back-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #fff;
+  font-weight: 600;
+}
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 0 10px #1db95480;
+}
+
+.user-name {
+  font-size: 1rem;
+  color: #e0e0e0;
 }
 </style>
