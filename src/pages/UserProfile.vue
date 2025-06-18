@@ -82,22 +82,20 @@ function toggleLike() {
 // Carrega nome e músicas
 onMounted(async () => {
   try {
-    const response = await axios.get("http://localhost:3001/api/songs", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const response = await axios.get(`http://localhost:3001/api/users/${userId}/songs`);
     songs.value = response.data;
 
-    // Tenta obter o nome do usuário salvo localmente
-    const name = localStorage.getItem("userName") || "Usuário";
-    userName.value = name;
-    updateAvatar(name);
+    if (response.data.length > 0) {
+      userName.value = response.data[0].user_name;
+      updateAvatar(response.data[0].user_name);
+    } else {
+      userName.value = "Usuário";
+    }
   } catch (err) {
     console.error("Erro ao carregar perfil:", err);
   }
 });
+
 </script>
 
 <style scoped>
