@@ -59,6 +59,20 @@
           Login
         </v-btn>
 
+        <!-- Menu do usuário -->
+        <v-menu v-if="userName && !mobileMenuOpen && !isMobile">
+          <template #activator="{ props }">
+            <v-btn variant="plain" v-bind="props">
+              <span style="color: #fff">{{ userName }}</span>
+              <v-icon icon="mdi-menu-down" color="#fff" />
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="goToProfile"> Profile </v-list-item>
+            <v-list-item @click="handleLogout"> Logout </v-list-item>
+          </v-list>
+        </v-menu>
+
         <!-- Dropdown de idiomas -->
         <v-menu v-if="!isMobile">
           <template #activator="{ props }">
@@ -95,20 +109,6 @@
             </v-list-item>
           </v-list>
         </v-menu>
-
-        <!-- Menu do usuário -->
-        <v-menu v-if="userName && !mobileMenuOpen && !isMobile">
-          <template #activator="{ props }">
-            <v-btn variant="plain" v-bind="props">
-              <span style="color: #fff">{{ userName }}</span>
-              <v-icon icon="mdi-menu-down" color="#fff" />
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="goToProfile"> Profile </v-list-item> 
-            <v-list-item @click="handleLogout"> Logout </v-list-item>
-          </v-list>
-        </v-menu>
       </div>
 
       <!-- Ícone hamburguer (mobile) -->
@@ -143,7 +143,7 @@
           </template>
 
           <div v-if="userName" class="mobile-link">Olá, {{ userName }}!</div>
-          
+
           <v-btn
             v-if="userName"
             class="mobile-link"
@@ -259,12 +259,11 @@ function selectLanguage(lang) {
 function goToProfile() {
   if (!userStore.userId) {
     console.error("ID do usuário não disponível - usuário não logado?");
-    router.push('/login');
+    router.push("/login");
     return;
   }
   router.push(`/profile/${userStore.userId}`);
 }
-
 </script>
 
 <style scoped>
