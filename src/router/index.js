@@ -3,6 +3,7 @@ import Home from "@/components/ProjecT.vue";
 import BotDiscord from "@/pages/DiscordBot.vue";
 import Musics from "@/pages/Musics.vue";
 import UserProfile from "@/pages/UserProfile.vue";
+import AdminPage from "@/pages/AdminPage.vue";
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: "/profile/:id",
     name: "UserProfile",
     component: UserProfile,
+  },
+  {
+    path: "/admin",
+    name: "AdminPage",
+    component: AdminPage,
   },
 ];
 

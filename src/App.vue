@@ -211,18 +211,21 @@ const login = async () => {
       password: loginPassword.value,
     });
 
-    // Verifique se o ID está vindo na resposta
     console.log("Resposta do login:", res.data);
-    
-    // Armazene o ID corretamente
-    userStore.setUser(res.data.name, res.data.token, res.data.id);
-    
+
+    userStore.setUser(res.data.name, res.data.token, res.data.id, res.data.permission);
+
     dialogStore.loginDialog = false;
+
+    if (res.data.permission) {
+      window.location.href = "/admin"; // ✅ Redireciona se for admin
+    }
   } catch (error) {
     console.error(error);
     alert(error.response?.data?.error ?? "Erro.");
   }
 };
+
 
 const handleLogout = () => {
   localStorage.removeItem("userName");

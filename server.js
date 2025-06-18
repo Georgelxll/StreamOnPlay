@@ -6,8 +6,8 @@ import ytdl from "@distube/ytdl-core";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import pkg from "pg";
-import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 
 // Configurar o caminho do ffmpeg
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
@@ -33,7 +33,7 @@ const port = 3001;
 // Ativando o CORS
 app.use(cors()); // permitirá requests de qualquer lugar
 app.use(express.json());
-app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
+app.use("/downloads", express.static(path.join(__dirname, "downloads")));
 
 // Segredo para o JWT
 const JWT_SECRET = "segredo_superseguro";
@@ -96,16 +96,19 @@ app.post("/api/Login", async (req, res) => {
     if (result.rowCount === 0)
       return res.status(400).json({ error: "Usuário não encontrado" });
 
-    // verifica a senha
     const match = await bcrypt.compare(password, result.rows[0].password_hash);
     if (!match) return res.status(400).json({ error: "Senha incorreta" });
 
-    // Gera o JWT junto com o nome
     const token = jwt.sign({ id: result.rows[0].id }, JWT_SECRET, {
       expiresIn: "1h",
     });
 
-    res.json({ token, name: result.rows[0].name, id: result.rows[0].id });
+    res.json({
+      token,
+      name: result.rows[0].name,
+      id: result.rows[0].id,
+      permission: result.rows[0].permission, // ✅ Retorne aqui
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao autenticar" });
@@ -138,18 +141,18 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
     }
 
     // Gera um nome de arquivo seguro
-    const safeTitle = title.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+    const safeTitle = title.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
     const fileName = `${safeTitle}_${Date.now()}.mp3`;
     const filePath = path.join(downloadsDir, fileName);
 
     // Faz o download e converte para MP3
-    const audioStream = ytdl(cleaned, { quality: 'highestaudio' });
+    const audioStream = ytdl(cleaned, { quality: "highestaudio" });
     const ffmpegProcess = ffmpeg(audioStream)
       .audioBitrate(128)
       .save(filePath)
-      .on('end', async () => {
+      .on("end", async () => {
         console.log(`Download concluído: ${filePath}`);
-        
+
         // Insere no banco de dados após o download concluir
         try {
           const result = await pool.query(
@@ -157,17 +160,19 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
             [req.user.id, title, artist, cover, cleaned, fileName]
           );
 
-          res.json({ message: "Música criada e download concluído!", ...result.rows[0] });
+          res.json({
+            message: "Música criada e download concluído!",
+            ...result.rows[0],
+          });
         } catch (dbError) {
           console.error(dbError);
           res.status(500).json({ error: "Erro ao salvar no banco de dados" });
         }
       })
-      .on('error', (err) => {
-        console.error('Erro ao converter:', err);
+      .on("error", (err) => {
+        console.error("Erro ao converter:", err);
         res.status(500).json({ error: "Erro ao converter o áudio" });
       });
-
   } catch (err) {
     res.status(500).json({
       error: "Erro ao processar",
@@ -206,13 +211,15 @@ app.get("/api/songs/public", async (req, res) => {
 app.get("/api/users/:id/songs", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
-    
+
     if (isNaN(userId)) {
       return res.status(400).json({ error: "ID do usuário inválido" });
     }
 
     // Verifica se o usuário existe
-    const userExists = await pool.query("SELECT id FROM users WHERE id = $1", [userId]);
+    const userExists = await pool.query("SELECT id FROM users WHERE id = $1", [
+      userId,
+    ]);
     if (userExists.rows.length === 0) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
@@ -233,6 +240,54 @@ app.get("/api/users/:id/songs", async (req, res) => {
   }
 });
 
+// GET /api/admin/songs
+app.get("/api/admin/songs", autenticarJWT, async (req, res) => {
+  if (!req.user?.id) return res.status(403).json({ error: "Sem permissão" });
+
+  const result = await pool.query(
+    "SELECT permission FROM users WHERE id = $1",
+    [req.user.id]
+  );
+  if (result.rows[0]?.permission !== true) {
+    return res.status(403).json({ error: "Acesso negado" });
+  }
+
+  try {
+    const songs = await pool.query(`
+      SELECT s.id, s.title, s.artist, s.cover, s.url, s.file_path, s.created_at,
+             u.name AS added_by
+      FROM songs s
+      JOIN users u ON s.user_id = u.id
+      ORDER BY s.created_at DESC
+    `);
+    res.json(songs.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao buscar músicas" });
+  }
+});
+
+app.get("/api/admin/downloads", autenticarJWT, async (req, res) => {
+  // (opcional) checar permissão de admin aqui
+  fs.readdir(downloadsDir, (err, files) => {
+    if (err) return res.status(500).json({ error: "Erro ao ler a pasta" });
+    res.json(files);
+  });
+});
+
+app.delete(
+  "/api/admin/downloads/:filename",
+  autenticarJWT,
+  async (req, res) => {
+    // (opcional) checar permissão de admin aqui também
+    const filePath = path.join(downloadsDir, req.params.filename);
+    fs.unlink(filePath, (err) => {
+      if (err)
+        return res.status(500).json({ error: "Erro ao excluir arquivo" });
+      res.json({ message: "Arquivo excluído com sucesso" });
+    });
+  }
+);
 
 // Executar o servidor
 app.listen(port, () => {
