@@ -6,6 +6,11 @@ import ytdl from "@distube/ytdl-core";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import pkg from "pg";
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+
+// Configurar o caminho do ffmpeg
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const { Pool } = pkg;
 
@@ -117,7 +122,6 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
 
   try {
     const cleaned = url.split("&")[0];
-
     const info = await ytdl.getInfo(cleaned);
     const title = info.videoDetails.title;
     const artist = info.videoDetails.author.name;
@@ -133,12 +137,37 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
       return res.status(400).json({ error: "Música já adicionada." });
     }
 
-    const result = await pool.query(
-      "INSERT INTO songs (user_id, title, artist, cover, url) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [req.user.id, title, artist, cover, cleaned]
-    );
+    // Gera um nome de arquivo seguro
+    const safeTitle = title.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+    const fileName = `${safeTitle}_${Date.now()}.mp3`;
+    const filePath = path.join(downloadsDir, fileName);
 
-    res.json({ message: "Música criada!", ...result.rows[0] });
+    // Faz o download e converte para MP3
+    const audioStream = ytdl(cleaned, { quality: 'highestaudio' });
+    const ffmpegProcess = ffmpeg(audioStream)
+      .audioBitrate(128)
+      .save(filePath)
+      .on('end', async () => {
+        console.log(`Download concluído: ${filePath}`);
+        
+        // Insere no banco de dados após o download concluir
+        try {
+          const result = await pool.query(
+            "INSERT INTO songs (user_id, title, artist, cover, url, file_path) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [req.user.id, title, artist, cover, cleaned, fileName]
+          );
+
+          res.json({ message: "Música criada e download concluído!", ...result.rows[0] });
+        } catch (dbError) {
+          console.error(dbError);
+          res.status(500).json({ error: "Erro ao salvar no banco de dados" });
+        }
+      })
+      .on('error', (err) => {
+        console.error('Erro ao converter:', err);
+        res.status(500).json({ error: "Erro ao converter o áudio" });
+      });
+
   } catch (err) {
     res.status(500).json({
       error: "Erro ao processar",

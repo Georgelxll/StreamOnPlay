@@ -51,6 +51,14 @@
                       >
                         <v-icon>mdi-play-circle</v-icon>
                       </v-btn>
+                      <v-btn
+                        icon
+                        size="small"
+                        color="blue"
+                        @click.stop="downloadSong(song)"
+                      >
+                        <v-icon>mdi-download</v-icon>
+                      </v-btn>
                     </v-card-actions>
                   </v-card>
 
@@ -62,10 +70,10 @@
                   >
                     <v-card-text class="flip-back-text">
                       <div class="user-info">
-                        <div 
-                        class="user-avatar"
-                        @click.stop="goToProfile(song.user_id)"
-                        style="cursor: pointer;"
+                        <div
+                          class="user-avatar"
+                          @click.stop="goToProfile(song.user_id)"
+                          style="cursor: pointer"
                         >
                           <v-icon size="32">mdi-account-circle</v-icon>
                         </div>
@@ -113,11 +121,29 @@
               dense
               placeholder="https://youtu.be/E-pN_h6RQSo ou https://www.youtube.com/watch?v=E-pN_h6RQSo"
             />
+            <v-progress-linear
+              v-if="showProgress"
+              v-model="progress"
+              color="green-accent-4"
+              height="10"
+              striped
+              rounded
+              class="mt-4"
+            ></v-progress-linear>
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn text @click="openAddMusic = false">Cancel</v-btn>
-            <v-btn color="green-accent-4" @click="saveSong">Save</v-btn>
+            <v-btn text @click="cancelAddMusic" :disabled="loading"
+              >Cancel</v-btn
+            >
+            <v-btn
+              color="green-accent-4"
+              @click="saveSong"
+              :loading="loading"
+              :disabled="loading || !newSong.url"
+            >
+              Save
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -162,7 +188,6 @@ const filteredSongs = computed(() => {
   );
 });
 
-
 // Função de exemplo para tocar música
 function playSong(song) {
   console.log("Tocando música:", song.title);
@@ -178,6 +203,9 @@ const isLogin = ref(false);
 const showLoginDialog = ref(true);
 const emit = defineEmits(["openSignupModal"]);
 const usersMap = ref({}); // ID → Nome
+const loading = ref(false);
+const progress = ref(0);
+const showProgress = ref(false);
 
 async function fetchUsers() {
   try {
@@ -294,8 +322,6 @@ const newSong = ref({ url: "" });
 
 async function saveSong() {
   const { url } = newSong.value;
-  console.log("Tentando salvar:", url); // Log adicional
-
   if (!url) {
     showSnackbar("Informe uma URL!", "red");
     return;
@@ -306,7 +332,18 @@ async function saveSong() {
     return;
   }
 
+  loading.value = true;
+  showProgress.value = true;
+  progress.value = 0;
+
   try {
+    // Configura um intervalo para simular o progresso (substitua pelo progresso real se possível)
+    const progressInterval = setInterval(() => {
+      if (progress.value < 90) {
+        progress.value += 10;
+      }
+    }, 500);
+
     const response = await fetch("http://localhost:3001/api/songs", {
       method: "POST",
       headers: {
@@ -317,13 +354,15 @@ async function saveSong() {
     });
 
     const data = await response.json();
-    console.log("Resposta do servidor:", data); // Log da resposta
 
     if (!response.ok) {
       throw new Error(data.error || `Erro ${response.status}`);
     }
 
-    // Atualização otimizada da lista
+    clearInterval(progressInterval);
+    progress.value = 100;
+
+    // Atualiza a lista de músicas
     songs.value = [
       {
         id: data.id || Date.now(),
@@ -331,16 +370,32 @@ async function saveSong() {
         artist: data.artist,
         cover: data.cover,
         url: data.url || url,
+        file_path: data.file_path,
       },
       ...songs.value,
     ];
 
+    // Fecha o modal após um pequeno delay para mostrar o progresso completo
+    setTimeout(() => {
+      newSong.value = { url: "" };
+      openAddMusic.value = false;
+      loading.value = false;
+      showProgress.value = false;
+      showSnackbar("Música adicionada!", "green");
+    }, 500);
+  } catch (err) {
+    console.error("Erro completo:", err);
+    loading.value = false;
+    showProgress.value = false;
+    showSnackbar(err.details || err.message || "Erro desconhecido", "red");
+  }
+}
+
+function cancelAddMusic() {
+  if (!loading.value) {
     newSong.value = { url: "" };
     openAddMusic.value = false;
-    showSnackbar("Música adicionada!", "green");
-  } catch (err) {
-    console.error("Erro completo:", err); // Log detalhado
-    showSnackbar(err.details || err.message || "Erro desconhecido", "red");
+    showProgress.value = false;
   }
 }
 
@@ -358,6 +413,14 @@ function showSnackbar(message, color = "green") {
   snackbarText.value = message;
   snackbarColor.value = color;
   snackbar.value = true;
+}
+
+function downloadSong(song) {
+  if (song.file_path) {
+    window.open(`http://localhost:3001/downloads/${song.file_path}`, "_blank");
+  } else {
+    showSnackbar("Arquivo não disponível para download", "red");
+  }
 }
 </script>
 
@@ -522,5 +585,13 @@ function showSnackbar(message, color = "green") {
 .user-name {
   font-size: 1rem;
   color: #e0e0e0;
+}
+
+.add-music-modal .v-progress-linear {
+  transition: all 0.3s ease;
+}
+
+.add-music-modal .v-btn--loading {
+  opacity: 0.8;
 }
 </style>
