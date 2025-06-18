@@ -6,15 +6,9 @@ import ytdl from "@distube/ytdl-core";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import pkg from "pg";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
-
-// Configurar o caminho do ffmpeg
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const { Pool } = pkg;
 
-// Conexão com o banco de dados
 const pool = new Pool({
   connectionString:
     "postgresql://streamon_owner:npg_6qENmtywph1f@ep-dark-bread-aclxi3lb-pooler.sa-east-1.aws.neon.tech/streamon?sslmode=require",
@@ -30,15 +24,12 @@ if (!fs.existsSync(downloadsDir)) {
 const app = express();
 const port = 3001;
 
-// Ativando o CORS
-app.use(cors()); // permitirá requests de qualquer lugar
+app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(path.join(__dirname, "downloads")));
 
-// Segredo para o JWT
 const JWT_SECRET = "segredo_superseguro";
 
-// Middleware para autenticar o usuário pelo JWT
 function autenticarJWT(req, res, next) {
   const authHeader = req.headers.authorization;
 
@@ -56,7 +47,7 @@ function autenticarJWT(req, res, next) {
   }
 }
 
-// Rotas de autenticação
+// Registro
 app.post("/api/Register", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
@@ -107,7 +98,7 @@ app.post("/api/Login", async (req, res) => {
       token,
       name: result.rows[0].name,
       id: result.rows[0].id,
-      permission: result.rows[0].permission, // ✅ Retorne aqui
+      permission: result.rows[0].permission,
     });
   } catch (err) {
     console.error(err);
@@ -115,7 +106,7 @@ app.post("/api/Login", async (req, res) => {
   }
 });
 
-// Adicionar nova música (protected)
+// ✅ Adicionar nova música (otimizado, sem ffmpeg)
 app.post("/api/songs", autenticarJWT, async (req, res) => {
   const { url } = req.body;
 
@@ -130,7 +121,6 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
     const artist = info.videoDetails.author.name;
     const cover = info.videoDetails.thumbnails[0]?.url || "";
 
-    // Verifica se a música já existe
     const consult = await pool.query(
       "SELECT title FROM songs WHERE title = $1 AND user_id = $2",
       [title, req.user.id]
@@ -140,56 +130,54 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
       return res.status(400).json({ error: "Música já adicionada." });
     }
 
-    // Gera um nome de arquivo seguro
     const safeTitle = title.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
-    const fileName = `${safeTitle}_${Date.now()}.mp3`;
+    const fileName = `${safeTitle}_${Date.now()}.webm`;
     const filePath = path.join(downloadsDir, fileName);
 
-    // Faz o download e converte para MP3
-    const audioStream = ytdl(cleaned, { quality: "highestaudio" });
-    const ffmpegProcess = ffmpeg(audioStream)
-      .audioBitrate(128)
-      .save(filePath)
-      .on("end", async () => {
-        console.log(`Download concluído: ${filePath}`);
+    const audioStream = ytdl(cleaned, {
+      filter: "audioonly",
+      quality: "highestaudio",
+    });
 
-        // Insere no banco de dados após o download concluir
-        try {
-          const result = await pool.query(
-            "INSERT INTO songs (user_id, title, artist, cover, url, file_path) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [req.user.id, title, artist, cover, cleaned, fileName]
-          );
+    const writeStream = fs.createWriteStream(filePath);
+    audioStream.pipe(writeStream);
 
-          res.json({
-            message: "Música criada e download concluído!",
-            ...result.rows[0],
-          });
-        } catch (dbError) {
-          console.error(dbError);
-          res.status(500).json({ error: "Erro ao salvar no banco de dados" });
-        }
-      })
-      .on("error", (err) => {
-        console.error("Erro ao converter:", err);
-        res.status(500).json({ error: "Erro ao converter o áudio" });
-      });
+    writeStream.on("finish", async () => {
+      try {
+        const result = await pool.query(
+          "INSERT INTO songs (user_id, title, artist, cover, url, file_path) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          [req.user.id, title, artist, cover, cleaned, fileName]
+        );
+
+        res.json({
+          message: "Música criada e download concluído!",
+          ...result.rows[0],
+        });
+      } catch (dbError) {
+        console.error(dbError);
+        res.status(500).json({ error: "Erro ao salvar no banco de dados" });
+      }
+    });
+
+    writeStream.on("error", (err) => {
+      console.error("Erro ao salvar o arquivo:", err);
+      res.status(500).json({ error: "Erro ao salvar o arquivo" });
+    });
   } catch (err) {
     res.status(500).json({
       error: "Erro ao processar",
       details: err.message,
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
   }
 });
 
-// Listar as músicas do usuário
+// Listar músicas do usuário
 app.get("/api/songs", autenticarJWT, async (req, res) => {
   try {
     const result = await pool.query(
       "SELECT * FROM songs WHERE user_id=$1 ORDER BY id DESC",
       [req.user.id]
     );
-
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -197,7 +185,7 @@ app.get("/api/songs", autenticarJWT, async (req, res) => {
   }
 });
 
-// Listar TODAS as músicas (público)
+// Listar todas as músicas
 app.get("/api/songs/public", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM songs ORDER BY id DESC");
@@ -208,15 +196,14 @@ app.get("/api/songs/public", async (req, res) => {
   }
 });
 
+// Músicas de um usuário
 app.get("/api/users/:id/songs", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
-
     if (isNaN(userId)) {
       return res.status(400).json({ error: "ID do usuário inválido" });
     }
 
-    // Verifica se o usuário existe
     const userExists = await pool.query("SELECT id FROM users WHERE id = $1", [
       userId,
     ]);
@@ -240,7 +227,7 @@ app.get("/api/users/:id/songs", async (req, res) => {
   }
 });
 
-// GET /api/admin/songs
+// Admin - listar todas as músicas
 app.get("/api/admin/songs", autenticarJWT, async (req, res) => {
   if (!req.user?.id) return res.status(403).json({ error: "Sem permissão" });
 
@@ -267,34 +254,25 @@ app.get("/api/admin/songs", autenticarJWT, async (req, res) => {
   }
 });
 
+// Admin - listar arquivos de download
 app.get("/api/admin/downloads", autenticarJWT, async (req, res) => {
-  // (opcional) checar permissão de admin aqui
   fs.readdir(downloadsDir, (err, files) => {
     if (err) return res.status(500).json({ error: "Erro ao ler a pasta" });
     res.json(files);
   });
 });
 
-app.delete(
-  "/api/admin/downloads/:filename",
-  autenticarJWT,
-  async (req, res) => {
-    // (opcional) checar permissão de admin aqui também
-    const filePath = path.join(downloadsDir, req.params.filename);
-    fs.unlink(filePath, (err) => {
-      if (err)
-        return res.status(500).json({ error: "Erro ao excluir arquivo" });
-      res.json({ message: "Arquivo excluído com sucesso" });
-    });
-  }
-);
-
-// Executar o servidor
-app.listen(port, () => {
-  console.log(`Server iniciado na porta ${port}. http://localhost:${port}`);
+// Admin - deletar arquivos
+app.delete("/api/admin/downloads/:filename", autenticarJWT, async (req, res) => {
+  const filePath = path.join(downloadsDir, req.params.filename);
+  fs.unlink(filePath, (err) => {
+    if (err)
+      return res.status(500).json({ error: "Erro ao excluir arquivo" });
+    res.json({ message: "Arquivo excluído com sucesso" });
+  });
 });
 
-// Lista todos os usuários (endpoint necessário para o frontend)
+// Lista todos os usuários
 app.get("/api/users", async (req, res) => {
   try {
     const result = await pool.query("SELECT id, name FROM users");
@@ -303,4 +281,9 @@ app.get("/api/users", async (req, res) => {
     console.error("Erro ao buscar usuários:", err);
     res.status(500).json({ error: "Erro ao buscar usuários" });
   }
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server iniciado na porta ${port}. http://localhost:${port}`);
 });
