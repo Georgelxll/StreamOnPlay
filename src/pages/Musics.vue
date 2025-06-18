@@ -150,9 +150,6 @@
     </v-main>
   </v-app>
 
-  <!-- Player de Áudio Invisível -->
-  <audio ref="audioPlayer" :src="currentSongUrl" @ended="onSongEnded" />
-
   <!-- Snackbar -->
   <v-snackbar
     v-model="snackbar"
@@ -162,6 +159,56 @@
   >
     {{ snackbarText }}
   </v-snackbar>
+
+  <!-- Player fixo no rodapé -->
+  <v-footer
+    v-if="currentSongUrl"
+    app
+    class="footer-player"
+    height="80"
+    color="#121212"
+    style="position: fixed; bottom: 0; width: 100%; z-index: 9999"
+  >
+    <v-container class="d-flex align-center justify-space-between">
+      <div class="d-flex align-center gap-4">
+        <v-icon color="green-accent-3">mdi-music</v-icon>
+        <div class="text-white font-weight-medium">
+          {{ currentSongTitle || "Tocando..." }}
+        </div>
+      </div>
+
+      <div class="d-flex align-center" style="flex: 1; margin: 0 20px">
+        <v-slider
+          v-model="currentTime"
+          :max="duration"
+          color="green-accent-4"
+          track-color="grey darken-1"
+          thumb-label
+          hide-details
+          class="flex-grow-1"
+          @change="seekAudio"
+        ></v-slider>
+      </div>
+
+      <div class="d-flex align-center gap-2">
+        <v-btn icon @click="togglePlayPause" color="green-accent-3">
+          <v-icon>{{ isPlaying ? "mdi-pause" : "mdi-play" }}</v-icon>
+        </v-btn>
+        <v-btn icon @click="closePlayer" color="red" class="ml-3">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+    </v-container>
+  </v-footer>
+
+  <!-- ELEMENTO DE ÁUDIO -->
+  <audio
+    ref="audioPlayer"
+    :src="currentSongUrl"
+    @ended="onSongEnded"
+    @pause="isPlaying = false"
+    @play="isPlaying = true"
+  />
 </template>
 
 <script setup>
@@ -357,10 +404,52 @@ async function fetchPublicSongs() {
   }
 }
 
+// Player - controle de áudio
+const isPlaying = ref(false);
+const currentTime = ref(0);
+const duration = ref(0);
+
+// Atualizar progresso do áudio
+function updateAudioProgress() {
+  if (audioPlayer.value) {
+    currentTime.value = audioPlayer.value.currentTime;
+    duration.value = audioPlayer.value.duration || 0;
+  }
+}
+
+// Alterar tempo da música com slider
+function seekAudio(value) {
+  if (audioPlayer.value) {
+    audioPlayer.value.currentTime = value;
+  }
+}
+
+// Alternar play/pause
+function togglePlayPause() {
+  if (!audioPlayer.value) return;
+
+  if (audioPlayer.value.paused) {
+    audioPlayer.value.play();
+  } else {
+    audioPlayer.value.pause();
+  }
+}
+
+function closePlayer() {
+  if (audioPlayer.value) {
+    audioPlayer.value.pause();
+  }
+  currentSongUrl.value = null;
+  currentTime.value = 0;
+  duration.value = 0;
+}
+
+
 // Inicialização
 onMounted(async () => {
   await fetchUsers();
   token.value ? await fetchPrivateSongs() : await fetchPublicSongs();
+  setInterval(updateAudioProgress, 1000);
 });
 </script>
 
