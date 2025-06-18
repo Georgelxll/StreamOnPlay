@@ -46,56 +46,63 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import axios from "axios";
+import { useRoute } from 'vue-router';
 
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-const userId = route.params.id
+const route = useRoute();
+const userId = ref(route.params.id); // Usando ref para reagir a mudanças
 
 // Estado
 const userName = ref("");
-const avatarUrl = ref(
-  "https://ui-avatars.com/api/?name=User&background=random"
-); // Avatar padrão
+const avatarUrl = ref("https://ui-avatars.com/api/?name=User&background=random");
 const songs = ref([]);
-
-// Token do usuário logado (supondo que está salvo no localStorage)
-const token = localStorage.getItem("token");
+const liked = ref(false);
+const isLoading = ref(false);
+const error = ref(null);
 
 // Atualiza o avatar com base no nome
-function updateAvatar(name) {
-  avatarUrl.value = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    name
-  )}&background=random`;
-}
+const updateAvatar = (name) => {
+  avatarUrl.value = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+};
 
-// Estado do like
-const liked = ref(false);
-
-// Função para alternar like
-function toggleLike() {
-  liked.value = !liked.value;
-}
-
-// Carrega nome e músicas
-onMounted(async () => {
+// Carrega os dados do perfil
+const loadProfileData = async () => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/users/${userId}/songs`);
+    isLoading.value = true;
+    error.value = null;
+    
+    if (!userId.value) {
+      throw new Error("ID do usuário não encontrado na URL");
+    }
+
+    const response = await axios.get(`http://localhost:3001/api/users/${userId.value}/songs`);
+    
     songs.value = response.data;
 
     if (response.data.length > 0) {
-      userName.value = response.data[0].user_name;
-      updateAvatar(response.data[0].user_name);
+      userName.value = response.data[0].user_name || "Usuário";
+      updateAvatar(userName.value);
     } else {
       userName.value = "Usuário";
+      updateAvatar("Usuário");
     }
   } catch (err) {
     console.error("Erro ao carregar perfil:", err);
+    error.value = err.response?.data?.error || err.message;
+  } finally {
+    isLoading.value = false;
   }
+};
+
+// Observa mudanças no userId (útil quando navega entre perfis)
+watch(() => route.params.id, (newId) => {
+  userId.value = newId;
+  loadProfileData();
 });
 
+// Carrega os dados inicialmente
+onMounted(loadProfileData);
 </script>
 
 <style scoped>

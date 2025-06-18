@@ -185,6 +185,7 @@ const emit = defineEmits(["open-login", "open-register"]);
 
 const userStore = useUserStore();
 const router = useRouter();
+const userId = computed(() => userStore.userId);
 
 const navItems = [
   {
@@ -255,8 +256,13 @@ function selectLanguage(lang) {
   selectedLanguage.value = lang;
 }
 
-function goToProfile(userId) {
-  router.push(`/profile/${userId}`);
+function goToProfile() {
+  if (!userStore.userId) {
+    console.error("ID do usuário não disponível - usuário não logado?");
+    router.push('/login');
+    return;
+  }
+  router.push(`/profile/${userStore.userId}`);
 }
 
 </script>

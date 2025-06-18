@@ -211,9 +211,12 @@ const login = async () => {
       password: loginPassword.value,
     });
 
-    // Use o userStore em vez de localStorage diretamente
-    userStore.setUser(res.data.name, res.data.token);
-
+    // Verifique se o ID está vindo na resposta
+    console.log("Resposta do login:", res.data);
+    
+    // Armazene o ID corretamente
+    userStore.setUser(res.data.name, res.data.token, res.data.id);
+    
     dialogStore.loginDialog = false;
   } catch (error) {
     console.error(error);

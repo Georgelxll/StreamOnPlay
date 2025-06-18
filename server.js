@@ -28,6 +28,7 @@ const port = 3001;
 // Ativando o CORS
 app.use(cors()); // permitirá requests de qualquer lugar
 app.use(express.json());
+app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 
 // Segredo para o JWT
 const JWT_SECRET = "segredo_superseguro";
@@ -99,7 +100,7 @@ app.post("/api/Login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.json({ token, name: result.rows[0].name });
+    res.json({ token, name: result.rows[0].name, id: result.rows[0].id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao autenticar" });
@@ -174,9 +175,19 @@ app.get("/api/songs/public", async (req, res) => {
 });
 
 app.get("/api/users/:id/songs", async (req, res) => {
-  const userId = req.params.id;
-
   try {
+    const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: "ID do usuário inválido" });
+    }
+
+    // Verifica se o usuário existe
+    const userExists = await pool.query("SELECT id FROM users WHERE id = $1", [userId]);
+    if (userExists.rows.length === 0) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
     const result = await pool.query(
       `SELECT songs.*, users.name AS user_name
        FROM songs

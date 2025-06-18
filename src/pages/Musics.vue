@@ -162,10 +162,6 @@ const filteredSongs = computed(() => {
   );
 });
 
-// Função para setar hover no mapa
-function setHover(id, val) {
-  hoveringImageMap.value = { ...hoveringImageMap.value, [id]: val };
-}
 
 // Função de exemplo para tocar música
 function playSong(song) {
