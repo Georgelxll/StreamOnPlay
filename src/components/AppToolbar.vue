@@ -67,9 +67,13 @@
               <v-icon icon="mdi-menu-down" color="#fff" />
             </v-btn>
           </template>
-          <v-list>
-            <v-list-item @click="goToProfile"> Profile </v-list-item>
-            <v-list-item @click="handleLogout"> Logout </v-list-item>
+          <v-list class="language-dropdown">
+            <v-list-item @click="goToProfile" class="language-item">
+              <v-list-item-title>Profile</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="handleLogout" class="language-item">
+              <v-list-item-title>Logout</v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-menu>
 
