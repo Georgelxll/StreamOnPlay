@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import pkg from "pg";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import { songQueue } from './queue.js';
 
 // Configurar o caminho do ffmpeg
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
@@ -127,8 +128,6 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
     const cleaned = url.split("&")[0];
     const info = await ytdl.getInfo(cleaned);
     const title = info.videoDetails.title;
-    const artist = info.videoDetails.author.name;
-    const cover = info.videoDetails.thumbnails[0]?.url || "";
 
     // Verifica se a música já existe
     const consult = await pool.query(
@@ -140,39 +139,20 @@ app.post("/api/songs", autenticarJWT, async (req, res) => {
       return res.status(400).json({ error: "Música já adicionada." });
     }
 
-    // Gera um nome de arquivo seguro
-    const safeTitle = title.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
-    const fileName = `${safeTitle}_${Date.now()}.mp3`;
-    const filePath = path.join(downloadsDir, fileName);
+    // Adiciona o job na fila
+    const job = await songQueue.add('processSong', {
+      url: cleaned,
+      userId: req.user.id,
+      downloadsDir: downloadsDir
+    });
 
-    // Faz o download e converte para MP3
-    const audioStream = ytdl(cleaned, { quality: "highestaudio" });
-    const ffmpegProcess = ffmpeg(audioStream)
-      .audioBitrate(128)
-      .save(filePath)
-      .on("end", async () => {
-        console.log(`Download concluído: ${filePath}`);
+    // Retorna imediatamente enquanto o processamento ocorre em background
+    res.json({ 
+      message: "Sua música está sendo processada em segundo plano",
+      jobId: job.id,
+      title: title
+    });
 
-        // Insere no banco de dados após o download concluir
-        try {
-          const result = await pool.query(
-            "INSERT INTO songs (user_id, title, artist, cover, url, file_path) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [req.user.id, title, artist, cover, cleaned, fileName]
-          );
-
-          res.json({
-            message: "Música criada e download concluído!",
-            ...result.rows[0],
-          });
-        } catch (dbError) {
-          console.error(dbError);
-          res.status(500).json({ error: "Erro ao salvar no banco de dados" });
-        }
-      })
-      .on("error", (err) => {
-        console.error("Erro ao converter:", err);
-        res.status(500).json({ error: "Erro ao converter o áudio" });
-      });
   } catch (err) {
     res.status(500).json({
       error: "Erro ao processar",
@@ -194,6 +174,28 @@ app.get("/api/songs", autenticarJWT, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao obter as músicas" });
+  }
+});
+
+app.get("/api/songs/status/:jobId", autenticarJWT, async (req, res) => {
+  try {
+    const job = await songQueue.getJob(req.params.jobId);
+    
+    if (!job) {
+      return res.status(404).json({ error: "Job não encontrado" });
+    }
+
+    const state = await job.getState();
+    const progress = job.progress;
+    
+    res.json({
+      state,
+      progress,
+      result: job.returnvalue,
+      failedReason: job.failedReason
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao verificar status" });
   }
 });
 
