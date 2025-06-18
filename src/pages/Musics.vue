@@ -204,7 +204,12 @@ async function fetchUsers() {
 
 onMounted(async () => {
   await fetchUsers();
-  await fetchPublicSongs(); // ou fetchPrivateSongs()
+  if (token.value) {
+    await fetchPrivateSongs();
+    await fetchPublicSongs();
+  } else {
+    await fetchPublicSongs();
+  }
 });
 
 async function login() {
@@ -358,8 +363,6 @@ function showSnackbar(message, color = "green") {
   snackbarColor.value = color;
   snackbar.value = true;
 }
-
-onMounted(fetchPublicSongs);
 </script>
 
 <style scoped>
