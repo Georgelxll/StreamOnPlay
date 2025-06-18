@@ -119,7 +119,7 @@
               label="URL do YouTube"
               outlined
               dense
-              placeholder="https://youtu.be/E-pN_h6RQSo ou https://www.youtube.com/watch?v=E-pN_h6RQSo"
+              placeholder="https://youtu.be/E-pN_h6RQSo"
             />
             <v-progress-linear
               v-if="showProgress"
@@ -133,9 +133,9 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn text @click="cancelAddMusic" :disabled="loading"
-              >Cancel</v-btn
-            >
+            <v-btn text @click="cancelAddMusic" :disabled="loading">
+              Cancel
+            </v-btn>
             <v-btn
               color="green-accent-4"
               @click="saveSong"
@@ -150,6 +150,10 @@
     </v-main>
   </v-app>
 
+  <!-- Player de Áudio Invisível -->
+  <audio ref="audioPlayer" :src="currentSongUrl" @ended="onSongEnded" />
+
+  <!-- Snackbar -->
   <v-snackbar
     v-model="snackbar"
     :color="snackbarColor"
@@ -161,25 +165,39 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 
+// Router
 const router = useRouter();
 
+// Estado principal
 const search = ref("");
-
 const songs = ref([]);
-
-// Estado hover separado para cada música, armazenado num objeto id => boolean
 const flippedCardMap = ref({});
+const currentSongUrl = ref(null);
+const audioPlayer = ref(null);
 
-function toggleFlip(id) {
-  flippedCardMap.value = {
-    ...flippedCardMap.value,
-    [id]: !flippedCardMap.value[id],
-  };
-}
+// Token e autenticação
+const token = ref(localStorage.getItem("token"));
+const isLogin = ref(!!token.value);
 
+// Mapeamento de usuários
+const usersMap = ref({});
+
+// Estados do modal de nova música
+const openAddMusic = ref(false);
+const newSong = ref({ url: "" });
+const loading = ref(false);
+const progress = ref(0);
+const showProgress = ref(false);
+
+// Snackbar
+const snackbar = ref(false);
+const snackbarColor = ref("green");
+const snackbarText = ref("");
+
+// Computado de filtro
 const filteredSongs = computed(() => {
   return songs.value.filter(
     (song) =>
@@ -188,162 +206,82 @@ const filteredSongs = computed(() => {
   );
 });
 
-// Função de exemplo para tocar música
+// Alternar o card flip
+function toggleFlip(id) {
+  flippedCardMap.value = {
+    ...flippedCardMap.value,
+    [id]: !flippedCardMap.value[id],
+  };
+}
+
+// Tocar música
 function playSong(song) {
-  console.log("Tocando música:", song.title);
-  // aqui você coloca a lógica real para tocar música
-}
-
-// Autenticação e resto do código permanece igual (não alterei)
-
-const token = ref(null);
-const email = ref("");
-const password = ref("");
-const isLogin = ref(false);
-const showLoginDialog = ref(true);
-const emit = defineEmits(["openSignupModal"]);
-const usersMap = ref({}); // ID → Nome
-const loading = ref(false);
-const progress = ref(0);
-const showProgress = ref(false);
-
-async function fetchUsers() {
-  try {
-    const response = await fetch("http://localhost:3001/api/users");
-    if (!response.ok) throw new Error("Erro ao buscar usuários");
-
-    const users = await response.json();
-
-    const map = {};
-    users.forEach((user) => {
-      map[user.id] = user.name;
-    });
-
-    usersMap.value = map;
-  } catch (err) {
-    console.error("Erro ao buscar usuários:", err);
-    showSnackbar("Erro ao buscar usuários", "red");
+  if (!song.file_path) {
+    showSnackbar("Arquivo não disponível para reprodução", "red");
+    return;
   }
+
+  currentSongUrl.value = `http://localhost:3001/downloads/${song.file_path}`;
+
+  nextTick(() => {
+    if (audioPlayer.value) {
+      audioPlayer.value.pause();
+      audioPlayer.value.load();
+      audioPlayer.value.play();
+    }
+  });
+
+  showSnackbar(`Tocando: ${song.title}`, "green");
 }
 
-onMounted(async () => {
-  await fetchUsers();
-  if (token.value) {
-    await fetchPrivateSongs();
-    await fetchPublicSongs();
+function onSongEnded() {
+  showSnackbar("Música finalizada", "blue");
+}
+
+// Navegar para o perfil
+function goToProfile(userId) {
+  router.push(`/profile/${userId}`);
+}
+
+// Snackbar util
+function showSnackbar(message, color = "green") {
+  snackbarText.value = message;
+  snackbarColor.value = color;
+  snackbar.value = true;
+}
+
+// Download
+function downloadSong(song) {
+  if (song.file_path) {
+    window.open(`http://localhost:3001/downloads/${song.file_path}`, "_blank");
   } else {
-    await fetchPublicSongs();
-  }
-});
-
-async function login() {
-  if (!email.value || !password.value) return;
-
-  try {
-    const response = await fetch("http://localhost:3001/api/Login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.value, password: password.value }),
-    });
-
-    if (!response.ok) {
-      showSnackbar("Dados incorretos!", "red");
-
-      return;
-    }
-
-    const result = await response.json();
-
-    token.value = result.token;
-    localStorage.setItem("token", result.token); // salva o token
-    isLogin.value = true;
-
-    showLoginDialog.value = false;
-
-    showSnackbar("Login realizado!", "green");
-
-    // Carregar músicas autenticadas
-    await fetchPrivateSongs();
-  } catch (err) {
-    showSnackbar(err.message, "red");
-
-    console.error(err);
+    showSnackbar("Arquivo não disponível para download", "red");
   }
 }
 
-token.value = localStorage.getItem("token");
-if (token.value) {
-  isLogin.value = true;
-  fetchPrivateSongs();
-}
-
-async function fetchPrivateSongs() {
-  try {
-    const response = await fetch("http://localhost:3001/api/songs", {
-      headers: { Authorization: `Bearer ${token.value}` },
-    });
-
-    if (response.ok) {
-      songs.value = await response.json();
-    } else {
-      showSnackbar("Erro ao obter as músicas.", "red");
-
-      console.error(await response.text());
-    }
-  } catch (err) {
-    showSnackbar(err.message, "red");
-
-    console.error(err);
+// Nova música
+function cancelAddMusic() {
+  if (!loading.value) {
+    newSong.value = { url: "" };
+    openAddMusic.value = false;
+    showProgress.value = false;
   }
 }
-
-async function fetchPublicSongs() {
-  try {
-    // Busca públicas
-    const response = await fetch("http://localhost:3001/api/songs/public");
-
-    if (response.ok) {
-      songs.value = await response.json();
-    } else {
-      showSnackbar("Erro ao obter as músicas.", "red");
-
-      console.error(await response.text());
-    }
-  } catch (err) {
-    showSnackbar(err.message, "red");
-
-    console.error(err);
-  }
-}
-
-// Adicionar nova música
-const openAddMusic = ref(false);
-const newSong = ref({ url: "" });
 
 async function saveSong() {
   const { url } = newSong.value;
-  if (!url) {
-    showSnackbar("Informe uma URL!", "red");
-    return;
-  }
-
-  if (!token.value) {
-    showSnackbar("Autenticação necessária", "red");
-    return;
-  }
+  if (!url) return showSnackbar("Informe uma URL!", "red");
+  if (!token.value) return showSnackbar("Autenticação necessária", "red");
 
   loading.value = true;
   showProgress.value = true;
   progress.value = 0;
 
-  try {
-    // Configura um intervalo para simular o progresso (substitua pelo progresso real se possível)
-    const progressInterval = setInterval(() => {
-      if (progress.value < 90) {
-        progress.value += 10;
-      }
-    }, 500);
+  const progressInterval = setInterval(() => {
+    if (progress.value < 90) progress.value += 10;
+  }, 500);
 
+  try {
     const response = await fetch("http://localhost:3001/api/songs", {
       method: "POST",
       headers: {
@@ -354,15 +292,12 @@ async function saveSong() {
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || `Erro ${response.status}`);
-    }
-
     clearInterval(progressInterval);
+
+    if (!response.ok) throw new Error(data.error || "Erro ao salvar");
+
     progress.value = 100;
 
-    // Atualiza a lista de músicas
     songs.value = [
       {
         id: data.id || Date.now(),
@@ -375,7 +310,6 @@ async function saveSong() {
       ...songs.value,
     ];
 
-    // Fecha o modal após um pequeno delay para mostrar o progresso completo
     setTimeout(() => {
       newSong.value = { url: "" };
       openAddMusic.value = false;
@@ -384,44 +318,50 @@ async function saveSong() {
       showSnackbar("Música adicionada!", "green");
     }, 500);
   } catch (err) {
-    console.error("Erro completo:", err);
+    console.error(err);
+    clearInterval(progressInterval);
     loading.value = false;
     showProgress.value = false;
-    showSnackbar(err.details || err.message || "Erro desconhecido", "red");
+    showSnackbar(err.message || "Erro desconhecido", "red");
   }
 }
 
-function cancelAddMusic() {
-  if (!loading.value) {
-    newSong.value = { url: "" };
-    openAddMusic.value = false;
-    showProgress.value = false;
+// Fetch dados
+async function fetchUsers() {
+  try {
+    const res = await fetch("http://localhost:3001/api/users");
+    const users = await res.json();
+    usersMap.value = Object.fromEntries(users.map((u) => [u.id, u.name]));
+  } catch (e) {
+    showSnackbar("Erro ao buscar usuários", "red");
   }
 }
 
-function goToProfile(userId) {
-  router.push(`/profile/${userId}`);
-}
-
-// Snackbar
-const snackbar = ref(false);
-const snackbarColor = ref("green");
-
-const snackbarText = ref("");
-
-function showSnackbar(message, color = "green") {
-  snackbarText.value = message;
-  snackbarColor.value = color;
-  snackbar.value = true;
-}
-
-function downloadSong(song) {
-  if (song.file_path) {
-    window.open(`http://localhost:3001/downloads/${song.file_path}`, "_blank");
-  } else {
-    showSnackbar("Arquivo não disponível para download", "red");
+async function fetchPrivateSongs() {
+  try {
+    const res = await fetch("http://localhost:3001/api/songs", {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+    songs.value = await res.json();
+  } catch (err) {
+    showSnackbar("Erro ao obter músicas", "red");
   }
 }
+
+async function fetchPublicSongs() {
+  try {
+    const res = await fetch("http://localhost:3001/api/songs/public");
+    songs.value = await res.json();
+  } catch (err) {
+    showSnackbar("Erro ao obter músicas públicas", "red");
+  }
+}
+
+// Inicialização
+onMounted(async () => {
+  await fetchUsers();
+  token.value ? await fetchPrivateSongs() : await fetchPublicSongs();
+});
 </script>
 
 <style scoped>
