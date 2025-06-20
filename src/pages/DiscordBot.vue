@@ -56,7 +56,8 @@
 
         <div class="cta-wrapper mt-6 mb-12">
           <v-btn color="green-accent-4" class="cta-button" size="large">
-            Add to Discord
+            <a href="https://discord.com/oauth2/authorize?client_id=1385051788691898478" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: black;">Add to Discord</a>
+            
           </v-btn>
         </div>
 
