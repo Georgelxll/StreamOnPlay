@@ -4,12 +4,12 @@
     <v-main class="music-app">
       <v-container class="py-10">
         <!-- Título -->
-        <h1 class="title">Musics</h1>
+        <h1 class="title">{{ $t('musicPage.title') }}</h1>
 
         <!-- Campo de busca -->
         <v-text-field
           v-model="search"
-          placeholder="Buscar músicas..."
+          :placeholder="$t('musicPage.searchPlaceholder')"
           prepend-inner-icon="mdi-magnify"
           variant="solo"
           hide-details
@@ -78,10 +78,8 @@
                           <v-icon size="32">mdi-account-circle</v-icon>
                         </div>
                         <div class="user-name">
-                          Adicionado por:
-                          <strong>{{
-                            usersMap[song.user_id] || "Desconhecido"
-                          }}</strong>
+                          {{ $t('musicPage.addedBy') }}
+                          <strong>{{ usersMap[song.user_id] || "Desconhecido" }}</strong>
                         </div>
                       </div>
                     </v-card-text>
@@ -93,7 +91,7 @@
         </div>
         <div v-else class="text-center mt-10 not-found-msg">
           <v-icon size="40" color="grey">mdi-magnify-close</v-icon>
-          <p class="text-grey text-subtitle-1 mt-2">No songs found</p>
+          <p class="text-grey text-subtitle-1 mt-2">{{ $t('musicPage.notFound') }}</p>
         </div>
       </v-container>
 
@@ -111,15 +109,15 @@
       <v-dialog v-model="openAddMusic" max-width="500px" persistent>
         <v-card class="add-music-modal">
           <v-card-title>
-            <span class="text-h6">Add New Music</span>
+            <span class="text-h6">{{ $t('musicPage.modal.title') }}</span>
           </v-card-title>
           <v-card-text>
             <v-text-field
               v-model="newSong.url"
-              label="URL do YouTube"
+              :label="$t('musicPage.modal.urlLabel')"
               outlined
               dense
-              placeholder="https://youtu.be/E-pN_h6RQSo"
+              :placeholder="$t('musicPage.modal.placeholder')"
             />
             <v-progress-linear
               v-if="showProgress"
@@ -134,7 +132,7 @@
           <v-card-actions>
             <v-spacer />
             <v-btn text @click="cancelAddMusic" :disabled="loading">
-              Cancel
+              {{ $t('musicPage.modal.cancel') }}
             </v-btn>
             <v-btn
               color="green-accent-4"
@@ -142,7 +140,7 @@
               :loading="loading"
               :disabled="loading || !newSong.url"
             >
-              Save
+              {{ $t('musicPage.modal.save') }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -173,7 +171,7 @@
       <div class="d-flex align-center gap-4">
         <v-icon color="green-accent-3">mdi-music</v-icon>
         <div class="text-white font-weight-medium">
-          {{ currentSongTitle || "Tocando..." }}
+          {{ currentSongTitle || $t('musicPage.player.nowPlaying') }}
         </div>
       </div>
 
