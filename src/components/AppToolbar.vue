@@ -69,10 +69,10 @@
           </template>
           <v-list class="language-dropdown">
             <v-list-item @click="goToProfile" class="language-item">
-              <v-list-item-title>Profile</v-list-item-title>
+              <v-list-item-title>{{ $t('profile') }}</v-list-item-title>
             </v-list-item>
             <v-list-item @click="handleLogout" class="language-item">
-              <v-list-item-title>Logout</v-list-item-title>
+              <v-list-item-title>{{ $t('logout') }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -184,6 +184,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "vue-router";
+import { useI18n } from 'vue-i18n';
 
 const emit = defineEmits(["open-login", "open-register"]);
 
@@ -198,12 +199,18 @@ const navItems = [
     label: "BOT",
     tooltip: "Bot Discord",
   },
-  { icon: "mdi-music", to: "/musics", label: "MUSICS", tooltip: "Musics" },
+  { 
+    icon: "mdi-music", 
+    to: "/musics", 
+    label: "MUSICS", 
+    tooltip: "Musics" 
+  },
 ];
 
 const mobileMenuOpen = ref(false);
 const isMobile = ref(false);
 const userName = computed(() => userStore.userName);
+const { locale } = useI18n();
 
 // Bandeiras reais (links CDN ou locais)
 const languages = [
@@ -258,6 +265,7 @@ function handleLogout() {
 
 function selectLanguage(lang) {
   selectedLanguage.value = lang;
+  locale.value = lang.code; 
 }
 
 function goToProfile() {

@@ -8,10 +8,10 @@
           <v-row class="fill-height" align="center" justify="center">
             <v-col class="text-center">
               <h1 class="display-2 font-weight-bold text-green">
-                Discover StreamOn Play
+                {{ $t('hero.title') }}
               </h1>
               <p class="text-white text-h6 mt-4">
-                Your musical journey starts here
+                {{ $t('hero.subtitle') }}
               </p>
               <v-btn
                 @click="emit('open-signup-modal')"
@@ -19,7 +19,7 @@
                 dark
                 large
               >
-                Start Now
+                {{ $t('hero.start') }}
               </v-btn>
             </v-col>
           </v-row>
@@ -45,10 +45,10 @@
                 >
                   <v-img :src="dev.avatar" height="280px" cover></v-img>
                   <v-card-title class="text-green">{{ dev.name }}</v-card-title>
-                  <v-card-text>{{ dev.bio }}</v-card-text>
+                  <v-card-text>{{ $t(dev.bioKey) }}</v-card-text>
                   <v-card-actions>
                     <v-btn :href="dev.url" target="_blank" color="green" text>
-                      View on GitHub
+                      {{ $t('devs.button') }}
                     </v-btn>
                   </v-card-actions>
                 </v-card>
@@ -85,20 +85,20 @@ import { ref } from "vue";
 const devCards = [
   {
     name: "George",
-    bio: "BackEnd specialist and clean design enthusiast.",
+    bioKey: "devs.george.bio",
     avatar: "https://avatars.githubusercontent.com/u/166880649?v=4",
     url: "https://github.com/Georgelxll",
   },
   {
     name: "Luiz Pedro",
-    bio: "Front-End enthusiast and advocate of fluid experience.",
+    bioKey: "devs.luiz.bio",
     avatar:
       "https://avatars.githubusercontent.com/u/74275864?s=400&u=08af40a2efb1e6e44910a904222cf90a53262866&v=4",
     url: "https://github.com/luuizpeedro",
   },
   {
     name: "Lucas Silva",
-    bio: "API and bot dev for Discord, always looking for intelligent automation.",
+    bioKey: "devs.lucas.bio",
     avatar:
       "https://media-gru1-1.cdn.whatsapp.net/v/t61.24694-24/491887537_964379899197293_6717416557819175312_n.jpg?ccb=11-4&oh=01_Q5Aa1wFL2yWq7p3xGLAeknN45Nz6aqAHbsmQARq4tR8bjlAw3Q&oe=685929C5&_nc_sid=5e03e0&_nc_cat=107",
     url: "https://github.com/lucas-ssilva2706",
