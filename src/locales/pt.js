@@ -28,4 +28,28 @@ export default {
     title: "StreamOn Play",
     email: "contato@streamonplay.com",
   },
+
+  botPromo: {
+    title: "StremWave",
+    description:
+      "O bot definitivo para transformar seu servidor com música, moderação e diversão.",
+    addButton: "Adicionar ao Discord",
+    features: {
+      music: {
+        title: "Comandos de Música",
+        description:
+          "Toque músicas diretamente do YouTube e Spotify com qualidade premium.",
+      },
+      moderation: {
+        title: "Moderação Automática",
+        description:
+          "Banimentos, filtros e proteção contra spam e trolls em tempo real.",
+      },
+      fun: {
+        title: "Jogos e Diversão",
+        description:
+          "Mini-jogos, quizzes e interações para animar seu servidor.",
+      },
+    },
+  },
 };

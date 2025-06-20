@@ -48,15 +48,14 @@
 
     <v-main class="promo-screen pt-16">
       <v-container class="py-12">
-        <h1 class="bot-title">StremWave</h1>
+        <h1 class="bot-title">{{ $t('botPromo.title') }}</h1>
         <p class="bot-description">
-          The ultimate bot to transform your server with music, moderation and
-          fun.
+          {{ $t('botPromo.description') }}
         </p>
 
         <div class="cta-wrapper mt-6 mb-12">
           <v-btn color="green-accent-4" class="cta-button" size="large">
-            <a href="https://discord.com/oauth2/authorize?client_id=1385051788691898478" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: black;">Add to Discord</a>
+            <a href="https://discord.com/oauth2/authorize?client_id=1385051788691898478" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: black;">{{ $t('botPromo.addButton') }}</a>
             
           </v-btn>
         </div>
@@ -66,10 +65,9 @@
             <v-card class="feature-card" elevation="4" rounded>
               <v-card-text class="text-center">
                 <v-icon size="36" color="green-accent-4">mdi-music</v-icon>
-                <h3 class="feature-title">Music Commands</h3>
+                <h3 class="feature-title">{{ $t('botPromo.features.music.title') }}</h3>
                 <p class="feature-description">
-                  Play music directly from YouTube and Spotify in premium
-                  quality.
+                  {{ $t('botPromo.features.music.description') }}
                 </p>
               </v-card-text>
             </v-card>
@@ -80,10 +78,9 @@
                 <v-icon size="36" color="green-accent-4"
                   >mdi-shield-check</v-icon
                 >
-                <h3 class="feature-title">Automatic Moderation</h3>
+                <h3 class="feature-title">{{ $t('botPromo.features.moderation.title') }}</h3>
                 <p class="feature-description">
-                  Real-time bans, filters, and protections against spam and
-                  trolls.
+                  {{ $t('botPromo.features.moderation.description') }}
                 </p>
               </v-card-text>
             </v-card>
@@ -94,9 +91,9 @@
                 <v-icon size="36" color="green-accent-4"
                   >mdi-controller-classic</v-icon
                 >
-                <h3 class="feature-title">Games and Fun</h3>
+                <h3 class="feature-title">{{ $t('botPromo.features.fun.title') }}</h3>
                 <p class="feature-description">
-                  Mini-games, quizzes and interactions to liven up your server.
+                  {{ $t('botPromo.features.fun.description') }}
                 </p>
               </v-card-text>
             </v-card>
