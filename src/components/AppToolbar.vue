@@ -196,13 +196,11 @@ const navItems = [
   {
     icon: "mdi-robot",
     to: "/bot-discord",
-    label: "BOT",
     tooltip: "Bot Discord",
   },
   { 
     icon: "mdi-music", 
-    to: "/musics", 
-    label: "MUSICS", 
+    to: "/musics",
     tooltip: "Musics" 
   },
 ];
