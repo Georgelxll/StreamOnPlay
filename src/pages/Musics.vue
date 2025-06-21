@@ -4,18 +4,36 @@
     <v-main class="music-app">
       <v-container class="py-10">
         <!-- Título -->
-        <h1 class="title">{{ $t('musicPage.title') }}</h1>
+        <h1 class="title">{{ $t("musicPage.title") }}</h1>
 
         <!-- Campo de busca -->
-        <v-text-field v-model="search" :placeholder="$t('musicPage.searchPlaceholder')" prepend-inner-icon="mdi-magnify"
-          variant="solo" hide-details class="search-bar" density="comfortable" rounded />
+        <v-text-field
+          v-model="search"
+          :placeholder="$t('musicPage.searchPlaceholder')"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo"
+          hide-details
+          class="search-bar"
+          density="comfortable"
+          rounded
+        />
 
         <!-- Cards das músicas ou mensagem de não encontrada -->
         <div v-if="filteredSongs.length > 0">
           <v-row class="mt-6" dense>
-            <v-col v-for="song in filteredSongs" :key="song.id" cols="12" sm="6" md="4" lg="3">
+            <v-col
+              v-for="song in filteredSongs"
+              :key="song.id"
+              cols="12"
+              sm="6"
+              md="4"
+              lg="3"
+            >
               <div class="flip-card" @click="toggleFlip(song.id)">
-                <div class="flip-card-inner" :class="{ flipped: flippedCardMap[song.id] }">
+                <div
+                  class="flip-card-inner"
+                  :class="{ flipped: flippedCardMap[song.id] }"
+                >
                   <!-- Frente do card -->
                   <v-card class="music-card" rounded="lg" elevation="4">
                     <v-img :src="song.cover" cover class="music-img" />
@@ -25,25 +43,45 @@
                       <div class="song-artist">{{ song.artist }}</div>
                     </v-card-text>
                     <v-card-actions class="justify-end">
-                      <v-btn icon size="small" color="green-accent-4" @click.stop="playSong(song)">
+                      <v-btn
+                        icon
+                        size="small"
+                        color="green-accent-4"
+                        @click.stop="playSong(song)"
+                      >
                         <v-icon>mdi-play-circle</v-icon>
                       </v-btn>
-                      <v-btn icon size="small" color="blue" @click.stop="downloadSong(song)">
+                      <v-btn
+                        icon
+                        size="small"
+                        color="blue"
+                        @click.stop="downloadSong(song)"
+                      >
                         <v-icon>mdi-download</v-icon>
                       </v-btn>
                     </v-card-actions>
                   </v-card>
 
                   <!-- Verso do card -->
-                  <v-card class="music-card back-face" rounded="lg" elevation="4">
+                  <v-card
+                    class="music-card back-face"
+                    rounded="lg"
+                    elevation="4"
+                  >
                     <v-card-text class="flip-back-text">
                       <div class="user-info">
-                        <div class="user-avatar" @click.stop="goToProfile(song.user_id)" style="cursor: pointer">
+                        <div
+                          class="user-avatar"
+                          @click.stop="goToProfile(song.user_id)"
+                          style="cursor: pointer"
+                        >
                           <v-icon size="32">mdi-account-circle</v-icon>
                         </div>
                         <div class="user-name">
-                          {{ $t('musicPage.addedBy') }}
-                          <strong>{{ usersMap[song.user_id] || "Desconhecido" }}</strong>
+                          {{ $t("musicPage.addedBy") }}
+                          <strong>{{
+                            usersMap[song.user_id] || "Desconhecido"
+                          }}</strong>
                         </div>
                       </div>
                     </v-card-text>
@@ -55,12 +93,19 @@
         </div>
         <div v-else class="text-center mt-10 not-found-msg">
           <v-icon size="40" color="grey">mdi-magnify-close</v-icon>
-          <p class="text-grey text-subtitle-1 mt-2">{{ $t('musicPage.notFound') }}</p>
+          <p class="text-grey text-subtitle-1 mt-2">
+            {{ $t("musicPage.notFound") }}
+          </p>
         </div>
       </v-container>
 
       <!-- Botão flutuante -->
-      <v-btn icon class="fab" color="green-accent-4" @click="openAddMusic = true">
+      <v-btn
+        icon
+        class="fab"
+        color="green-accent-4"
+        @click="openAddMusic = true"
+      >
         <v-icon size="32">mdi-plus</v-icon>
       </v-btn>
 
@@ -68,21 +113,38 @@
       <v-dialog v-model="openAddMusic" max-width="500px" persistent>
         <v-card class="add-music-modal">
           <v-card-title>
-            <span class="text-h6">{{ $t('musicPage.modal.title') }}</span>
+            <span class="text-h6">{{ $t("musicPage.modal.title") }}</span>
           </v-card-title>
           <v-card-text>
-            <v-text-field v-model="newSong.url" :label="$t('musicPage.modal.urlLabel')" outlined dense
-              :placeholder="$t('musicPage.modal.placeholder')" />
-            <v-progress-linear v-if="showProgress" v-model="progress" color="green-accent-4" height="10" striped rounded
-              class="mt-4"></v-progress-linear>
+            <v-text-field
+              v-model="newSong.url"
+              :label="$t('musicPage.modal.urlLabel')"
+              outlined
+              dense
+              :placeholder="$t('musicPage.modal.placeholder')"
+            />
+            <v-progress-linear
+              v-if="showProgress"
+              v-model="progress"
+              color="green-accent-4"
+              height="10"
+              striped
+              rounded
+              class="mt-4"
+            ></v-progress-linear>
           </v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn text @click="cancelAddMusic" :disabled="loading">
-              {{ $t('musicPage.modal.cancel') }}
+              {{ $t("musicPage.modal.cancel") }}
             </v-btn>
-            <v-btn color="green-accent-4" @click="saveSong" :loading="loading" :disabled="loading || !newSong.url">
-              {{ $t('musicPage.modal.save') }}
+            <v-btn
+              color="green-accent-4"
+              @click="saveSong"
+              :loading="loading"
+              :disabled="loading || !newSong.url"
+            >
+              {{ $t("musicPage.modal.save") }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -91,24 +153,43 @@
   </v-app>
 
   <!-- Snackbar -->
-  <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000" location="bottom center">
+  <v-snackbar
+    v-model="snackbar"
+    :color="snackbarColor"
+    timeout="3000"
+    location="bottom center"
+  >
     {{ snackbarText }}
   </v-snackbar>
 
   <!-- Player fixo no rodapé -->
-  <v-footer v-if="currentSongUrl" app class="footer-player" height="80" color="#121212"
-    style="position: fixed; bottom: 0; width: 100%; z-index: 9999">
+  <v-footer
+    v-if="currentSongUrl"
+    app
+    class="footer-player"
+    height="80"
+    color="#121212"
+    style="position: fixed; bottom: 0; width: 100%; z-index: 9999"
+  >
     <v-container class="d-flex align-center justify-space-between">
       <div class="d-flex align-center gap-4">
         <v-icon color="green-accent-3">mdi-music</v-icon>
         <div class="text-white font-weight-medium">
-          {{ currentSongTitle || $t('musicPage.player.nowPlaying') }}
+          {{ currentSongTitle || $t("musicPage.player.nowPlaying") }}
         </div>
       </div>
 
       <div class="d-flex align-center" style="flex: 1; margin: 0 20px">
-        <v-slider v-model="currentTime" :max="duration" color="green-accent-4" track-color="grey darken-1" thumb-label
-          hide-details class="flex-grow-1" @change="seekAudio"></v-slider>
+        <v-slider
+          v-model="currentTime"
+          :max="duration"
+          color="green-accent-4"
+          track-color="grey darken-1"
+          thumb-label
+          hide-details
+          class="flex-grow-1"
+          @change="seekAudio"
+        ></v-slider>
       </div>
 
       <div class="d-flex align-center gap-2">
@@ -123,8 +204,13 @@
   </v-footer>
 
   <!-- ELEMENTO DE ÁUDIO -->
-  <audio ref="audioPlayer" :src="currentSongUrl" @ended="onSongEnded" @pause="isPlaying = false"
-    @play="isPlaying = true" />
+  <audio
+    ref="audioPlayer"
+    :src="currentSongUrl"
+    @ended="onSongEnded"
+    @pause="isPlaying = false"
+    @play="isPlaying = true"
+  />
 </template>
 
 <script setup>
@@ -364,7 +450,6 @@ function closePlayer() {
   currentTime.value = 0;
   duration.value = 0;
 }
-
 
 // Inicialização
 onMounted(async () => {

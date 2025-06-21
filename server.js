@@ -28,7 +28,6 @@ app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(path.join(__dirname, "downloads")));
 
-
 const JWT_SECRET = "segredo_superseguro";
 
 function autenticarJWT(req, res, next) {
@@ -264,14 +263,18 @@ app.get("/api/admin/downloads", autenticarJWT, async (req, res) => {
 });
 
 // Admin - deletar arquivos
-app.delete("/api/admin/downloads/:filename", autenticarJWT, async (req, res) => {
-  const filePath = path.join(downloadsDir, req.params.filename);
-  fs.unlink(filePath, (err) => {
-    if (err)
-      return res.status(500).json({ error: "Erro ao excluir arquivo" });
-    res.json({ message: "Arquivo excluído com sucesso" });
-  });
-});
+app.delete(
+  "/api/admin/downloads/:filename",
+  autenticarJWT,
+  async (req, res) => {
+    const filePath = path.join(downloadsDir, req.params.filename);
+    fs.unlink(filePath, (err) => {
+      if (err)
+        return res.status(500).json({ error: "Erro ao excluir arquivo" });
+      res.json({ message: "Arquivo excluído com sucesso" });
+    });
+  }
+);
 
 // Lista todos os usuários
 app.get("/api/users", async (req, res) => {
