@@ -28,6 +28,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(path.join(__dirname, "downloads")));
 
+
 const JWT_SECRET = "segredo_superseguro";
 
 function autenticarJWT(req, res, next) {
@@ -281,6 +282,21 @@ app.get("/api/users", async (req, res) => {
     console.error("Erro ao buscar usuários:", err);
     res.status(500).json({ error: "Erro ao buscar usuários" });
   }
+});
+
+app.get("/force-download/:filename", (req, res) => {
+  const file = path.join(downloadsDir, req.params.filename);
+
+  if (!fs.existsSync(file)) {
+    return res.status(404).json({ error: "Arquivo não encontrado" });
+  }
+
+  res.download(file, req.params.filename, (err) => {
+    if (err) {
+      console.error("Erro ao fazer download:", err);
+      res.status(500).json({ error: "Erro ao fazer download" });
+    }
+  });
 });
 
 // Start server
